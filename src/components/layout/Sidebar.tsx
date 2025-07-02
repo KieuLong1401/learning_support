@@ -19,7 +19,15 @@ interface Project {
 const localStorageProjects = 'my_projects'
 
 const defaultProjects: Project[] = [
-  { name: 'Project 1' },
+  { 
+    name: 'Project 1'
+  },
+  { 
+    name: 'a',
+    children: [
+      { name: 'c' }
+    ]
+  }
 ]
 
 function buildPath(parents: string[], name: string) {
@@ -44,23 +52,23 @@ function ProjectTree({
   const fullPath = buildPath(parents, project.name)
   const isActive = pathname === fullPath
 
-  if (project.children?.length) {
+  if (project.children) {
     return (
       <Accordion type="single" collapsible className="w-full" key={fullPath}>
         <AccordionItem value={fullPath}>
           <AccordionTrigger className="flex justify-between items-center px-4 py-2 text-left w-full">
             <span>{project.name}</span>
             <div className="space-x-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation()
-                onAdd([...parents, project.name], 'folder') // default tạo folder bên trong folder
-              }}
-            >
-              + Folder
-            </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAdd([...parents, project.name], 'folder')
+                }}
+              >
+                + project
+              </Button>
               <Button
                 size="sm"
                 variant="destructive"
@@ -68,14 +76,14 @@ function ProjectTree({
                   e.stopPropagation()
                   if (
                     confirm(
-                      `Bạn có chắc muốn xóa "${project.name}" và tất cả con không?`
+                      `do you really want to delete "${project.name}" folder and all of it's child?`
                     )
                   ) {
                     onDelete(parents, project.name)
                   }
                 }}
               >
-                Xóa
+                delete
               </Button>
             </div>
           </AccordionTrigger>
@@ -109,12 +117,12 @@ function ProjectTree({
         size="sm"
         variant="destructive"
         onClick={() => {
-          if (confirm(`Bạn có chắc muốn xóa "${project.name}" không?`)) {
+          if (confirm(`do you really want to delete "${project.name}" project?`)) {
             onDelete(parents, project.name)
           }
         }}
       >
-        Xóa
+        delete
       </Button>
     </div>
   )
@@ -127,7 +135,6 @@ export default function Sidebar() {
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState<'folder' | 'project'>('project')
 
-  // Load từ localStorage lúc mount
   useEffect(() => {
     const data = localStorage.getItem(localStorageProjects)
     if (data) {
@@ -137,7 +144,6 @@ export default function Sidebar() {
     }
   }, [])
 
-  // Lưu khi projects thay đổi
   useEffect(() => {
     localStorage.setItem(localStorageProjects, JSON.stringify(projects))
   }, [projects])
@@ -153,14 +159,14 @@ export default function Sidebar() {
   function handleAddSubmit() {
     const name = newName.trim()
     if (!name) {
-      alert('Vui lòng nhập tên hợp lệ')
+      alert('Please use a valid name') //alter : turn into input error
       return
     }
   
     function addProjectRec(items: Project[], path: string[]): Project[] {
       if (path.length === 0) {
         if (items.find((p) => p.name.toLowerCase() === name.toLowerCase())) {
-          alert('Tên đã tồn tại trong thư mục này!')
+          alert(`This ${newType} name already exist`) //alter : turn into input error
           return items
         }
         const newItem: Project = newType === 'folder' ? { name, children: [] } : { name }
@@ -211,14 +217,14 @@ export default function Sidebar() {
           Projects
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm">+ Tạo mới</Button>
+              <Button size="sm">:</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => openAddModal([], 'project')}>
-                📄 Tạo Project
+                📄 New Project
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openAddModal([], 'folder')}>
-                📁 Tạo Folder
+                📁 New Folder
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -233,18 +239,17 @@ export default function Sidebar() {
         ))}
       </div>
 
-      {/* Modal for adding new project/folder */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tạo Folder hoặc Project mới</DialogTitle>
+            <DialogTitle>Create new {newType}</DialogTitle>
             <DialogDescription>
-              Nhập tên cho folder hoặc project mới bạn muốn tạo.
+              Name your new {newType}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2 py-4">
             <div className="flex flex-col space-y-1">
-              <Label htmlFor="project-name">Tên mới</Label>
+              <Label htmlFor="project-name">Name</Label>
               <Input
                 id="project-name"
                 autoFocus
@@ -261,9 +266,9 @@ export default function Sidebar() {
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setAddModalOpen(false)}>
-              Hủy
+              Cancel
             </Button>
-            <Button onClick={handleAddSubmit}>Tạo</Button>
+            <Button onClick={handleAddSubmit}>Create</Button>
           </div>
         </DialogContent>
       </Dialog>
