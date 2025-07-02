@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import server from '../../lib/axios'
 import { Skeleton } from "@/components/ui/skeleton";
 import MCQQuiz from "@/components/quiz/MCQQuiz";

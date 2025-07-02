@@ -1,6 +1,5 @@
 'use client'
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -10,6 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import Folder from './Folder'
+import Project from './Project'
 
 interface Project {
   name: string
@@ -30,102 +31,14 @@ const defaultProjects: Project[] = [
   }
 ]
 
-function buildPath(parents: string[], name: string) {
-  const slugPath = [...parents, name].map((p) =>
-    slugify(p, { lower: true })
-  );
-  return "/" + slugPath.join("/");
-}
-
 function ProjectTree({ 
-  project, 
-  parents = [],
-  onAdd,
-  onDelete
+  project
 }: { 
-  project: Project; 
-  parents?: string[],
-  onAdd: (parents: string[], type: 'project' | 'folder') => void
-  onDelete: (parents: string[], name: string) => void
+  project: Project
 }) {
-  const pathname = usePathname()
-  const fullPath = buildPath(parents, project.name)
-  const isActive = pathname === fullPath
-
-  if (project.children) {
-    return (
-      <Accordion type="single" collapsible className="w-full" key={fullPath}>
-        <AccordionItem value={fullPath}>
-          <AccordionTrigger className="flex justify-between items-center px-4 py-2 text-left w-full">
-            <span>{project.name}</span>
-            <div className="space-x-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onAdd([...parents, project.name], 'folder')
-                }}
-              >
-                + project
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (
-                    confirm(
-                      `do you really want to delete "${project.name}" folder and all of it's child?`
-                    )
-                  ) {
-                    onDelete(parents, project.name)
-                  }
-                }}
-              >
-                delete
-              </Button>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="ml-4">
-            {project.children.map((child) => (
-              <ProjectTree
-                key={child.name}
-                project={child}
-                parents={[...parents, project.name]}
-                onAdd={onAdd}
-                onDelete={onDelete}
-              />
-            ))}
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    )
-  }
-
-  return (
-    <div key={fullPath} className="flex items-center space-x-2">
-      <Link href={fullPath} className="flex-grow">
-        <Button
-          variant={isActive ? 'secondary' : 'ghost'}
-          className="w-full justify-start px-4"
-        >
-          {project.name}
-        </Button>
-      </Link>
-      <Button
-        size="sm"
-        variant="destructive"
-        onClick={() => {
-          if (confirm(`do you really want to delete "${project.name}" project?`)) {
-            onDelete(parents, project.name)
-          }
-        }}
-      >
-        delete
-      </Button>
-    </div>
-  )
+  return project.children ?
+    <Folder folder_children={project.children} name={project.name} /> :
+    <Project name={project.name}/>
 }
 
 export default function Sidebar() {
@@ -233,8 +146,6 @@ export default function Sidebar() {
           <ProjectTree
             key={proj.name}
             project={proj}
-            onAdd={openAddModal}
-            onDelete={handleDelete}
           />
         ))}
       </div>
