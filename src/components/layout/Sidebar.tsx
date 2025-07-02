@@ -1,10 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import slugify from 'slugify'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
@@ -19,28 +16,6 @@ interface Project {
 
 const localStorageProjects = 'my_projects'
 
-const defaultProjects: Project[] = [
-  { 
-    name: 'Project 1'
-  },
-  { 
-    name: 'a',
-    children: [
-      { name: 'c' }
-    ]
-  }
-]
-
-function ProjectTree({ 
-  project
-}: { 
-  project: Project
-}) {
-  return project.children ?
-    <Folder folder_children={project.children} name={project.name} /> :
-    <Project name={project.name}/>
-}
-
 export default function Sidebar() {
   const [projects, setProjects] = useState<Project[]>([])
   const [addModalOpen, setAddModalOpen] = useState(false)
@@ -52,8 +27,6 @@ export default function Sidebar() {
     const data = localStorage.getItem(localStorageProjects)
     if (data) {
       setProjects(JSON.parse(data))
-    } else {
-      setProjects(defaultProjects)
     }
   }, [])
 
@@ -68,7 +41,6 @@ export default function Sidebar() {
     setAddModalOpen(true)
   }
 
-  // Thêm mới
   function handleAddSubmit() {
     const name = newName.trim()
     if (!name) {
@@ -125,12 +97,12 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="w-60 bg-gray-900 text-white h-screen p-2 overflow-auto border-r border-gray-700 space-y-1">
+      <div className="w-60 bg-gray-200 text-black h-screen p-2 overflow-auto space-y-1">
         <h2 className="text-lg font-bold px-4 py-2 flex justify-between items-center">
           Projects
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm">:</Button>
+              <Button size="sm" variant={"ghost"}>...</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => openAddModal([], 'project')}>
@@ -142,12 +114,11 @@ export default function Sidebar() {
             </DropdownMenuContent>
           </DropdownMenu>
         </h2>
-        {projects.map((proj) => (
-          <ProjectTree
-            key={proj.name}
-            project={proj}
-          />
-        ))}
+        {projects.map((project) => {
+          return project.children ?
+            <Folder name={project.name} folder_children={project.children} handleDelete={handleDelete} handleCreateProject={openAddModal} key={'folder-' + project.name}/> :
+            <Project name={project.name} key={'project-' + project.name} handleDelete={handleDelete}/>
+        })}
       </div>
 
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>

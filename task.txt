@@ -1,0 +1,2 @@
+turn alert to input error
+clean code

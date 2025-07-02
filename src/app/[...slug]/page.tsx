@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, use } from "react";
 import server from '../../lib/axios'
 import { Skeleton } from "@/components/ui/skeleton";
 import MCQQuiz from "@/components/quiz/MCQQuiz";
@@ -14,7 +14,8 @@ const mockMCQRes = {
   wrongAnswers: ['wrong answer 1', 'wrong answer 2', 'wrong answer 3'],
 }
 
-export default function Project({params}: {params: {slug: string[]}}) {
+export default function Project(props: {params: Promise<{slug: string[]}>}) {
+  const params = use(props.params);
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [isPending, startTransition] = useTransition();
