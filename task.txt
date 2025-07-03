@@ -1,2 +1,7 @@
-turn alert to input error
 clean code
+add concept tab
+add flash card
+project manager
+quiz generate
+summarization
+✅show context menu when select text
