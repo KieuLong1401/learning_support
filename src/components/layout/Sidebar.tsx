@@ -22,6 +22,7 @@ export default function Sidebar() {
   const [addParents, setAddParents] = useState<string[]>([])
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState<'folder' | 'project'>('project')
+  const [nameInputErr, setNameInputErr] = useState<string | null>(null)
 
   useEffect(() => {
     const data = localStorage.getItem(localStorageProjects)
@@ -44,14 +45,14 @@ export default function Sidebar() {
   function handleAddSubmit() {
     const name = newName.trim()
     if (!name) {
-      alert('Please use a valid name') //alter : turn into input error
+      setNameInputErr('Please use a valid name')
       return
     }
-  
+  //alter separate duplication check of project and folder
     function addProjectRec(items: Project[], path: string[]): Project[] {
       if (path.length === 0) {
         if (items.find((p) => p.name.toLowerCase() === name.toLowerCase())) {
-          alert(`This ${newType} name already exist`) //alter : turn into input error
+          setNameInputErr(`This ${newType} name already exist`) //alter don't close modal if error
           return items
         }
         const newItem: Project = newType === 'folder' ? { name, children: [] } : { name }
@@ -132,11 +133,20 @@ export default function Sidebar() {
           <div className="grid gap-2 py-4">
             <div className="flex flex-col space-y-1">
               <Label htmlFor="project-name">Name</Label>
+              {nameInputErr && (
+                <p className='text-red-500'>{nameInputErr}</p>
+              )}
+              <p></p>
               <Input
                 id="project-name"
                 autoFocus
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={(e) => {
+                  setNewName(e.target.value)
+                  if(e.target.value.trim() != '') {
+                    setNameInputErr(null)
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
