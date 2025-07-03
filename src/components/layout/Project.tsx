@@ -15,7 +15,7 @@ export default function Project(
     }
 ) {
     const pathname = usePathname()
-    const path = "/" + (folder ? folder + name : name)
+    const path = "/" + (folder ? `${folder}/${name}` : name)
     const isActive = pathname === path
 
     return (
