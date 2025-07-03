@@ -120,3 +120,18 @@
     @apply bg-background text-foreground;
   }
 }
+input[type="range"] {
+  appearance: none;
+  background-color: transparent;
+  padding: 0;
+  border-color: rgba(128, 128, 128, 0.5);
+  height: 8px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  background-color: black;
+  border-radius: 9999px;
+  cursor: pointer; 
+}
