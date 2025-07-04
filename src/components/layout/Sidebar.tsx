@@ -19,7 +19,7 @@ const localStorageProjects = 'my_projects'
 export default function Sidebar() {
   const [projects, setProjects] = useState<Project[]>([])
   const [addModalOpen, setAddModalOpen] = useState(false)
-  const [addParents, setAddParents] = useState<string[]>([])
+  const [addParents, setAddParents] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState<'folder' | 'project'>('project')
   const [nameInputErr, setNameInputErr] = useState<string | null>(null)
@@ -35,36 +35,52 @@ export default function Sidebar() {
     localStorage.setItem(localStorageProjects, JSON.stringify(projects))
   }, [projects])
 
-  function openAddModal(parents: string[], type: 'folder' | 'project') {
+  function openAddModal(parents: string | null, type: 'folder' | 'project') {
     setAddParents(parents)
     setNewName('')
     setNewType(type)
+    setNameInputErr(null)
     setAddModalOpen(true)
   }
 
   function handleAddSubmit() {
     const name = newName.trim()
+
+    const checkDuplicate = (items: Project[]): boolean => {
+      return items.some(p => {
+        const isSameName = p.name.toLowerCase() === name.toLocaleLowerCase();
+        if (newType === "folder") return isSameName && !!p.children;
+        else return isSameName && !p.children;
+      });
+    };
+
     if (!name) {
       setNameInputErr('Please use a valid name')
       return
     }
-  //alter separate duplication check of project and folder
-    function addProjectRec(items: Project[], path: string[]): Project[] {
-      if (path.length === 0) {
-        if (items.find((p) => p.name.toLowerCase() === name.toLowerCase())) {
-          setNameInputErr(`This ${newType} name already exist`) //alter don't close modal if error
-          return items
-        }
+    if (addParents != null) {
+      const parent = projects.find(p => p.name.toLocaleLowerCase() == addParents.toLocaleLowerCase())
+      if(parent && parent.children && checkDuplicate(parent.children)) {
+        setNameInputErr(`This ${newType} name already exist`)
+        return
+      }
+    } else {
+      if (checkDuplicate(projects)) {
+        setNameInputErr(`This ${newType} name already exist`)
+        return
+      }
+    }
+    function addProjectRec(items: Project[], folder: string | null): Project[] {
+      if (folder === null) {
         const newItem: Project = newType === 'folder' ? { name, children: [] } : { name }
         return [...items, newItem]
       }
-  
       return items.map((item) => {
-        if (item.name === path[0]) {
+        if (item.name === folder) {
           const children = item.children ?? []
           return {
             ...item,
-            children: addProjectRec(children, path.slice(1)),
+            children: addProjectRec(children, null),
           }
         }
         return item
@@ -74,19 +90,21 @@ export default function Sidebar() {
     setProjects((prev) => addProjectRec(prev, addParents))
     setAddModalOpen(false)
   }
-
-  // Xóa project/folder
-  function handleDelete(parents: string[], nameToDelete: string) {
-    function deleteProjectRec(items: Project[], path: string[]): Project[] {
-      if (path.length === 0) {
-        return items.filter((p) => p.name !== nameToDelete)
+  function handleDelete(parents: string | null, nameToDelete: string, type: 'folder' | 'project') {
+    function deleteProjectRec(items: Project[], path: string | null): Project[] {
+      if (path == null) {
+        return items.filter((p) => {
+          const isMatch = p.name.toLocaleLowerCase() == nameToDelete.toLocaleLowerCase()
+          const isTargetType = type == 'folder' ? !!p.children : !p.children
+          return !(isMatch && isTargetType)
+        })
       }
       return items.map((item) => {
-        if (item.name === path[0]) {
+        if (item.name.toLocaleLowerCase() === path.toLocaleLowerCase()) {
           const children = item.children ?? []
           return {
             ...item,
-            children: deleteProjectRec(children, path.slice(1)),
+            children: deleteProjectRec(children, null),
           }
         }
         return item
@@ -98,7 +116,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="w-60 bg-gray-200 text-black h-screen p-2 overflow-auto space-y-1">
+      <div className="w-60 bg-gray-50 text-black h-screen p-2 overflow-auto space-y-1 border-r border-r-1 border-r-gray-200">
         <h2 className="text-lg font-bold px-4 py-2 flex justify-between items-center">
           Projects
           <DropdownMenu>
@@ -106,10 +124,10 @@ export default function Sidebar() {
               <Button size="sm" variant={"ghost"}>...</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openAddModal([], 'project')}>
+              <DropdownMenuItem onClick={() => openAddModal(null, 'project')}>
                 📄 New Project
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => openAddModal([], 'folder')}>
+              <DropdownMenuItem onClick={() => openAddModal(null, 'folder')}>
                 📁 New Folder
               </DropdownMenuItem>
             </DropdownMenuContent>

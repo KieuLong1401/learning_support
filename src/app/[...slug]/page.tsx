@@ -8,6 +8,7 @@ import QuizDialog from "@/components/quiz/QuizDialog";
 import { sleep } from "@/lib/utils";
 
 export default function Project(props: {params: Promise<{slug: string[]}>}) {
+  //alter check if the project is exist
   const params = use(props.params);
   const [input, setInput] = useState('');
   const [summarizeOutput, setSummarizeOutput] = useState('');
@@ -19,6 +20,7 @@ export default function Project(props: {params: Promise<{slug: string[]}>}) {
   const [textareaErr, setTextareaErr] = useState<string | null>(null)
 
   useEffect(() => {
+    //alter hide the context menu if user delete selected text
     const handleMouseUp = (e: MouseEvent) => {
       const selection = window.getSelection();
       const selectedText = selection?.toString().trim();
@@ -27,7 +29,7 @@ export default function Project(props: {params: Promise<{slug: string[]}>}) {
 
       if (selectedText && selectedText.trim() !== "" && selectedTextRef.current !== selectedText && isFromTextarea) {
         selectedTextRef.current = selectedText;
-        setMenuPosition({ x: e.clientX, y: e.clientY + 20 });
+        setMenuPosition({ x: e.clientX, y: e.clientY + 15 });
         setShowMenu(true);
       } else {
         selectedTextRef.current = ''
@@ -41,6 +43,10 @@ export default function Project(props: {params: Promise<{slug: string[]}>}) {
 
   //alter fix handleSubmit method for real api
   const handleSubmitSummarize = () => {
+    if(input.trim() == '') {
+      setTextareaErr('cannot summarize an empty text')
+      return
+    }
     startTransition(async () => {
       try {
         // const res = await server.post('/summarize', { text: input });
@@ -53,18 +59,11 @@ export default function Project(props: {params: Promise<{slug: string[]}>}) {
     });
   };
   const openModal = () => {
-    startTransition(async () => {
-      if(input.trim() == '') {
-        setTextareaErr('cannot generate quiz from empty text')
-        return
-      }
-      try {
-        setModalIsOpened(true) //alter make the modal open before await
-        await sleep(3000)
-      } catch (err) {
-        setTextareaErr(err instanceof Error ? err.message : 'unknown error occurred')
-      }
-    })
+    if(input.trim() == '') {
+      setTextareaErr('cannot generate quiz from an empty text')
+      return
+    }
+    setModalIsOpened(true)
   }
 
   return (
