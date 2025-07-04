@@ -8,6 +8,7 @@ import { Input } from '../ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import Folder from './Folder'
 import Project from './Project'
+import { usePathname, useRouter } from 'next/navigation'
 
 interface Project {
   name: string
@@ -23,6 +24,10 @@ export default function Sidebar() {
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState<'folder' | 'project'>('project')
   const [nameInputErr, setNameInputErr] = useState<string | null>(null)
+  const [deletePath, setDeletePath] = useState('')
+
+  const router = useRouter()
+  const pathName = usePathname()
 
   useEffect(() => {
     const data = localStorage.getItem(localStorageProjects)
@@ -34,6 +39,15 @@ export default function Sidebar() {
   useEffect(() => {
     localStorage.setItem(localStorageProjects, JSON.stringify(projects))
   }, [projects])
+  useEffect(() => {
+    if(deletePath == '') return
+    console.log(pathName, deletePath, pathName == deletePath)
+
+    if (pathName == deletePath || pathName.startsWith(deletePath+'/')) {
+      router.push('/')
+    }
+    setDeletePath('')
+  }, [deletePath, pathName, router])
 
   function openAddModal(parents: string | null, type: 'folder' | 'project') {
     setAddParents(parents)
@@ -92,6 +106,7 @@ export default function Sidebar() {
   }
   function handleDelete(parents: string | null, nameToDelete: string, type: 'folder' | 'project') {
     function deleteProjectRec(items: Project[], path: string | null): Project[] {
+      setDeletePath(`/${parents ? parents+'/' : ''}${nameToDelete}`)
       if (path == null) {
         return items.filter((p) => {
           const isMatch = p.name.toLocaleLowerCase() == nameToDelete.toLocaleLowerCase()
