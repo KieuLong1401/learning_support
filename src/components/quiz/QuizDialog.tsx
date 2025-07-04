@@ -1,8 +1,10 @@
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Skeleton } from "../ui/skeleton";
 import { sleep } from "@/lib/utils";
+import { Input } from "../ui/input";
+import { Slider } from "../ui/slider";
 
 const mockMCQRes = {
   type:  'mcq',
@@ -21,59 +23,75 @@ export default function QuizDialog(
     }
 ) {
     const [isPending, startTransition] = useTransition();
-    const [mcqCount, setMcqCount] = useState(4);
-    const [tfCount, setTfCount] = useState(2);
+    const [mcqCount, setMcqCount] = useState([4]);
+    const [tfCount, setTfCount] = useState([2]);
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+      if (!isOpen) return
+      setError(null)
+      setMcqCount([0])
+      setTfCount([0])
+      startTransition(async () => {
+        try {
+          await sleep(3000)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'unknown error occurred')
+        }
+      })
+    }, [isOpen])
 
     const handleSubmitGenerateQuiz = () => {
-    startTransition(async () => {
-      try {
-        // const res = await server.post('/question', { input_text: input, max_question: 4 });
-        // setQuizGenerateOutput(res.data.question || 'No result');
-        await sleep(2000)
-      } catch (err) {
-        console.error(err);
-      }
-    });
-  }
+      startTransition(async () => {
+        try {
+          // const res = await server.post('/question', { input_text: input, max_question: 4 });
+          // setQuizGenerateOutput(res.data.question || 'No result');
+          await sleep(2000)
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Generate Quiz Custom</DialogTitle>
+            <DialogDescription>{error}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 p-2">
             <div>
-              <label className="block text-sm font-medium mb-1">MCQ Count</label>
+              <div className="flex justify-between items-centers">
+                <label className="block text-sm font-medium mb-1">MCQ Count</label>
+                <span>{`${mcqCount}/10`}</span> {/* alter turn into api response */}
+              </div>
               {isPending ? (
                 <Skeleton className="h-10 w-full rounded-md bg-gray-200"></Skeleton>
               ) : (
-                <input
-                  type="range"
+                <Slider
                   value={mcqCount}
+                  max={10}//alter turn into api response
                   min={0}
-                  max={10} //alter turn into api response
-                  onChange={(e) => setMcqCount(parseInt(e.target.value))}
-                  className="w-full border px-2 py-1 rounded-md"
-                  />
+                  onValueChange={(value) => setMcqCount(value)}
+                />
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">True/False Count</label>
+              <div className="flex justify-between items-centers">
+                <label className="block text-sm font-medium mb-1">True/False Count</label>
+                <span>{`${tfCount}/10`}</span> {/* alter turn into api response */}
+              </div>
               {isPending ? (
                 <Skeleton className="h-10 w-full rounded-md bg-gray-200"></Skeleton>
               ) : (
                 <div>
-                  <span>0</span>
-                  <input
-                    type="range"
+                  <Slider
                     value={tfCount}
+                    max={10}//alter turn into api response
                     min={0}
-                    max={10} //alter turn into api response
-                    onChange={(e) => setTfCount(parseInt(e.target.value))}
-                    className="w-full border px-2 py-0 rounded-md"
-                    />
-                   <span>10</span> {/*//alter turn into api response */}
+                    onValueChange={(value) => setTfCount(value)}
+                  />
                 </div>
               )}
             </div>

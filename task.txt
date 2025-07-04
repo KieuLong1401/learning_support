@@ -1,7 +1,7 @@
 clean code
-add concept tab
 add flash card
-project manager
+add concept tab
 quiz generate
 summarization
+✅project manager
 ✅show context menu when select text
