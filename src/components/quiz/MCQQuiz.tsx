@@ -5,10 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface MCQQuizProps {
-    type: string
-    question: string;
+    question_statement: string;
     answer: string;
-    wrongAnswers: string[];
+    options: string[];
 }
 
 export default function MCQQuiz({quiz}: {quiz: MCQQuizProps}) {
@@ -16,7 +15,7 @@ export default function MCQQuiz({quiz}: {quiz: MCQQuizProps}) {
     const [selected, setSelected] = useState<string | null>(null)
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
 
-    const { question, answer, wrongAnswers } = quiz
+    const { question_statement: question, answer, options: wrongAnswers } = quiz
 
     useEffect(() => {
         const arr = [
@@ -40,16 +39,16 @@ export default function MCQQuiz({quiz}: {quiz: MCQQuizProps}) {
     setIsCorrect(option.isCorrect)
   }
 
-  let cardClass = "p-6 max-w-xl mx-auto border-2 border-gray-300"
+  let cardBorderColor = 'border-gray-400'
 
   if(isCorrect !== null) {
-    cardClass = isCorrect?
-    "p-6 max-w-xl mx-auto border-2 border-green-300":
-    "p-6 max-w-xl mx-auto border-2 border-red-300"
+    cardBorderColor = isCorrect?
+    "border-green-400":
+    "border-red-400"
   }
 
   return (
-    <Card className={cardClass}>
+    <Card className={`p-6 w-full mx-auto border-3 ${cardBorderColor}`}>
       <h2 className="text-lg font-semibold mb-4">{question}</h2>
       <div className="flex flex-col space-y-3">
         {options.map((option) => {
@@ -68,11 +67,11 @@ export default function MCQQuiz({quiz}: {quiz: MCQQuizProps}) {
                 <Button
                 key={option.text}
                 variant={variant}
-                className={option.isCorrect && selected ? 'bg-green-600 hover:bg-green-700 text-white': ''}
+                className={option.isCorrect && selected ? 'bg-green-600 hover:bg-green-700 text-white justify-start color': 'justify-start'}
                 onClick={() => handleClick(option)}
                 disabled={selected !== null}
                 >
-                    {option.text}
+                  {option.text}
                 </Button>
               )
         })}
