@@ -1,78 +1,116 @@
 "use client"
 
+import React, { useState, use, useEffect, useRef, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import React, { useState, useTransition, use, useEffect, useRef } from "react";
-import server from '../../lib/axios'
+import { Skeleton } from "@/components/ui/skeleton";
 import QuizDialog from "@/components/quiz/QuizDialog";
 import { sleep } from "@/lib/utils";
 
 export default function Project(props: {params: Promise<{slug: string[]}>}) {
-  //alter check if the project is exist
   const params = use(props.params);
   const [input, setInput] = useState('');
-  const [summarizeOutput, setSummarizeOutput] = useState('');
-  const [isPending, startTransition] = useTransition();
-  const [ModalIsOpened, setModalIsOpened] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
-  const [menuPosition, setMenuPosition] = useState({x: 0, y: 0})
-  const selectedTextRef = useRef("")
+  const [modalOpen, setModalOpen] = useState(false)
+  const [showContextMenu, setShowContextMenu] = useState(false)
+  const [contextMenuPosition, setContextMenuPosition] = useState({x: 0, y: 0})
+  const [showConcept, setShowConcept] = useState<boolean>(false)
   const [textareaErr, setTextareaErr] = useState<string | null>(null)
+  const [concept, setConcept] = useState('')
+  const [isPendingConcept, startTransitionConcept] = useTransition();
+  
+  const selectedTextRef = useRef("")
+  const contextMenuRef = useRef<HTMLDivElement | null>(null)
 
+  // text selection and menu position
   useEffect(() => {
-    //alter hide the context menu if user delete selected text
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleSelectionChange = () => {
       const selection = window.getSelection();
-      const selectedText = selection?.toString().trim();
+      const selectedText = selection?.toString().trim() ?? "";
+      const isFromTextarea = document.activeElement?.tagName === "TEXTAREA";
 
-      const isFromTextarea = document.activeElement?.tagName == "TEXTAREA"
-
-      if (selectedText && selectedText.trim() !== "" && selectedTextRef.current !== selectedText && isFromTextarea) {
+      if (selectedText && isFromTextarea) {
         selectedTextRef.current = selectedText;
-        setMenuPosition({ x: e.clientX, y: e.clientY + 15 });
-        setShowMenu(true);
       } else {
-        selectedTextRef.current = ''
-        setShowMenu(false);
+        if(showConcept) return
+        selectedTextRef.current = "";
+        setShowContextMenu(false);
+        setShowConcept(false)
       }
     };
 
+    const handleMouseUp = (e: MouseEvent) => {
+      const selectedText = selectedTextRef.current;
+      const isFromTextarea = document.activeElement?.tagName === "TEXTAREA";
+
+      if (selectedText && isFromTextarea) {
+        setContextMenuPosition({ 
+          x: Math.min(e.clientX, window.innerWidth - 230), 
+          y: e.clientY + 15 
+        });
+        setShowContextMenu(true);
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(e.target as Node)
+      ) {
+        setShowConcept(false)
+        setShowContextMenu(false)
+      }
+    } 
+
+    document.addEventListener("selectionchange", handleSelectionChange);
     document.addEventListener("mouseup", handleMouseUp);
-    return () => document.removeEventListener("mouseup", handleMouseUp);
-  }, [showMenu])
+    document.addEventListener("mousedown", handleClickOutside)
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousedown", handleClickOutside)
+    };
+  }, [showConcept])
+
+  // fetching concept
+  useEffect(() => {
+    if(!showConcept) return
+    startTransitionConcept(async() => {
+      try {
+        // to api
+        await sleep(2000)
+        setConcept('asd;lfkjas;dlfkja;lskdfjklasjdflksjdlkfjdkfjksdfjlskdfjlskdjflskdjflksajdflkajsdfklaj')
+      } catch(err) {
+        console.error(err)
+      }
+    })
+  }, [showConcept])
+
+  // prevent concept box from going off-screen
+  useEffect(() => {
+    if(!showConcept) return
+    setContextMenuPosition({
+      ...contextMenuPosition, 
+      x: Math.min(contextMenuPosition.x, window.innerWidth - 410)
+    })
+  }, [showConcept])
 
   //alter fix handleSubmit method for real api
-  const handleSubmitSummarize = () => {
-    if(input.trim() == '') {
-      setTextareaErr('cannot summarize an empty text')
-      return
-    }
-    startTransition(async () => {
-      try {
-        // const res = await server.post('/summarize', { text: input });
-        // setSummarizeOutput(res.data.sumary || 'No result');
-        await sleep(2000)
-      } catch (err) {
-        console.error(err);
-        setSummarizeOutput('Error');
-      }
-    });
-  };
   const openModal = () => {
     if(input.trim() == '') {
       setTextareaErr('cannot generate quiz from an empty text')
       return
     }
-    setModalIsOpened(true)
+    setModalOpen(true)
   }
 
   return (
     <>
-      <main className="flex flex-col max-w-4xl w-full mx-auto p-4 space-y-4 max-h-[100vh]">
-        <h1>{params.slug.map(e => decodeURIComponent(e)).join('/') + ''}</h1>
-        {textareaErr && (
-          <p className="text-red-500">{textareaErr}</p>
-        )}
+      <main className="flex flex-col max-w-4xl flex-1 overflow-auto mx-auto p-4 space-y-4 max-h-[100vh]">
+        <h1 className="text-xl">{params.slug.map(e => decodeURIComponent(e)).join('/')}</h1>
+
+        {textareaErr && <p className="text-red-500">{textareaErr}</p>}
+
         <Textarea
           placeholder="Type here"
           value={input}
@@ -83,28 +121,46 @@ export default function Project(props: {params: Promise<{slug: string[]}>}) {
             }
           }}
           className="resize-none min-h-[30%] max-h-[70vh] overflow-auto"
-          />
-        <div className="flex justify-end gap-[4px]  ">
-          <Button onClick={handleSubmitSummarize} disabled={isPending}>
-            Summarize
-          </Button>
-          <Button onClick={openModal} disabled={isPending}>
-            Generate Quiz
-          </Button>
-        </div>
+        />
+
+        <Button 
+          onClick={openModal}
+          className="w-40 ml-auto"
+        >
+          Generate Quiz
+        </Button>
       </main>
-      {showMenu && (
+
+      {showContextMenu && (
         <div 
-          className="absolute z-50 w-52 p-1 bg-white shadow-md border rounded-md animate-in fade-in" 
+          ref={contextMenuRef}
+          className="absolute z-50 max-w-100 p-1 bg-white shadow-md border rounded-md animate-in fade-in" 
           style={{
-            top: menuPosition.y,
-            left: menuPosition.x
+            top: contextMenuPosition.y,
+            left: contextMenuPosition.x
           }}
         >
-          <Button className="w-full h-8 text-left justify-start rounded-sm" variant={"ghost"}>Get concept</Button>
+          {showConcept ? (
+            <div className="px-4 py-2">
+              <h1 className="mb-2 text-lg">{selectedTextRef.current}</h1>
+              {isPendingConcept ? (
+                <Skeleton className="h-50 w-90 rounded-md bg-gray-200"/>
+              ) : (
+                <p className="break-words whitespace-normal">{concept}</p>
+              )}
+            </div>
+          ) : (
+            <Button 
+              onClick={() => setShowConcept(true)} 
+              variant={"ghost"} 
+              className="w-52 h-8 text-left justify-start rounded-sm"
+            >
+              Get concept
+            </Button>
+          )}
         </div>
       )}
-      <QuizDialog isOpen={ModalIsOpened} setIsOpen={setModalIsOpened}/>
+      <QuizDialog isOpen={modalOpen} setIsOpen={setModalOpen} text={input}/>
     </>
   );
 }

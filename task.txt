@@ -1,7 +1,9 @@
 clean code
 add flash card
-add concept tab
 quiz generate
-summarization
+    ✅mcq
+    true false
+connect to api
+✅add concept popup
 ✅project manager
 ✅show context menu when select text
