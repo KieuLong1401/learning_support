@@ -1,7 +1,3 @@
 export default function Home() {
-    return (
-        <div>
-            Home long branch
-        </div>
-    )
+	return <div>Home long branch</div>
 }

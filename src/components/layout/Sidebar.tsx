@@ -2,201 +2,259 @@
 
 import { Button } from '@/components/ui/button'
 import { useEffect, useState } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from '../ui/dialog'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
 import Folder from './Folder'
 import Project from './Project'
 import { usePathname, useRouter } from 'next/navigation'
 
 interface Project {
-  name: string
-  children?: Project[]
+	name: string
+	children?: Project[]
 }
 
 const localStorageProjects = 'my_projects'
 
 export default function Sidebar() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [addModalOpen, setAddModalOpen] = useState(false)
-  const [addParents, setAddParents] = useState<string | null>(null)
-  const [newName, setNewName] = useState('')
-  const [newType, setNewType] = useState<'folder' | 'project'>('project')
-  const [nameInputErr, setNameInputErr] = useState<string | null>(null)
-  const [deletePath, setDeletePath] = useState('')
+	const [projects, setProjects] = useState<Project[]>([])
+	const [addModalOpen, setAddModalOpen] = useState(false)
+	const [addParents, setAddParents] = useState<string | null>(null)
+	const [newName, setNewName] = useState('')
+	const [newType, setNewType] = useState<'folder' | 'project'>('project')
+	const [nameInputErr, setNameInputErr] = useState<string | null>(null)
+	const [deletePath, setDeletePath] = useState('')
 
-  const router = useRouter()
-  const pathName = usePathname()
+	const router = useRouter()
+	const pathName = usePathname()
 
-  useEffect(() => {
-    const data = localStorage.getItem(localStorageProjects)
-    if (data) {
-      setProjects(JSON.parse(data))
-    }
-  }, [])
+	useEffect(() => {
+		const data = localStorage.getItem(localStorageProjects)
+		if (data) {
+			setProjects(JSON.parse(data))
+		}
+	}, [])
 
-  useEffect(() => {
-    localStorage.setItem(localStorageProjects, JSON.stringify(projects))
-  }, [projects])
-  useEffect(() => {
-    if(deletePath == '') return
-    console.log(pathName, deletePath, pathName == deletePath)
+	useEffect(() => {
+		localStorage.setItem(localStorageProjects, JSON.stringify(projects))
+	}, [projects])
+	useEffect(() => {
+		if (deletePath == '') return
+		console.log(pathName, deletePath, pathName == deletePath)
 
-    if (pathName == deletePath || pathName.startsWith(deletePath+'/')) {
-      router.push('/')
-    }
-    setDeletePath('')
-  }, [deletePath, pathName, router])
+		if (pathName == deletePath || pathName.startsWith(deletePath + '/')) {
+			router.push('/')
+		}
+		setDeletePath('')
+	}, [deletePath, pathName, router])
 
-  function openAddModal(parents: string | null, type: 'folder' | 'project') {
-    setAddParents(parents)
-    setNewName('')
-    setNewType(type)
-    setNameInputErr(null)
-    setAddModalOpen(true)
-  }
+	function openAddModal(parents: string | null, type: 'folder' | 'project') {
+		setAddParents(parents)
+		setNewName('')
+		setNewType(type)
+		setNameInputErr(null)
+		setAddModalOpen(true)
+	}
 
-  function handleAddSubmit() {
-    const name = newName.trim()
+	function handleAddSubmit() {
+		const name = newName.trim()
 
-    const checkDuplicate = (items: Project[]): boolean => {
-      return items.some(p => {
-        const isSameName = p.name.toLowerCase() === name.toLocaleLowerCase();
-        if (newType === "folder") return isSameName && !!p.children;
-        else return isSameName && !p.children;
-      });
-    };
+		const checkDuplicate = (items: Project[]): boolean => {
+			return items.some((p) => {
+				const isSameName =
+					p.name.toLowerCase() === name.toLocaleLowerCase()
+				if (newType === 'folder') return isSameName && !!p.children
+				else return isSameName && !p.children
+			})
+		}
 
-    if (!name) {
-      setNameInputErr('Please use a valid name')
-      return
-    }
-    if (addParents != null) {
-      const parent = projects.find(p => p.name.toLocaleLowerCase() == addParents.toLocaleLowerCase())
-      if(parent && parent.children && checkDuplicate(parent.children)) {
-        setNameInputErr(`This ${newType} name already exist`)
-        return
-      }
-    } else {
-      if (checkDuplicate(projects)) {
-        setNameInputErr(`This ${newType} name already exist`)
-        return
-      }
-    }
-    function addProjectRec(items: Project[], folder: string | null): Project[] {
-      if (folder === null) {
-        const newItem: Project = newType === 'folder' ? { name, children: [] } : { name }
-        return [...items, newItem]
-      }
-      return items.map((item) => {
-        if (item.name === folder) {
-          const children = item.children ?? []
-          return {
-            ...item,
-            children: addProjectRec(children, null),
-          }
-        }
-        return item
-      })
-    }
-  
-    setProjects((prev) => addProjectRec(prev, addParents))
-    setAddModalOpen(false)
-  }
-  function handleDelete(parents: string | null, nameToDelete: string, type: 'folder' | 'project') {
-    function deleteProjectRec(items: Project[], path: string | null): Project[] {
-      setDeletePath(`/${parents ? parents+'/' : ''}${nameToDelete}`)
-      if (path == null) {
-        return items.filter((p) => {
-          const isMatch = p.name.toLocaleLowerCase() == nameToDelete.toLocaleLowerCase()
-          const isTargetType = type == 'folder' ? !!p.children : !p.children
-          return !(isMatch && isTargetType)
-        })
-      }
-      return items.map((item) => {
-        if (item.name.toLocaleLowerCase() === path.toLocaleLowerCase()) {
-          const children = item.children ?? []
-          return {
-            ...item,
-            children: deleteProjectRec(children, null),
-          }
-        }
-        return item
-      })
-    }
+		if (!name) {
+			setNameInputErr('Please use a valid name')
+			return
+		}
+		if (addParents != null) {
+			const parent = projects.find(
+				(p) =>
+					p.name.toLocaleLowerCase() == addParents.toLocaleLowerCase()
+			)
+			if (parent && parent.children && checkDuplicate(parent.children)) {
+				setNameInputErr(`This ${newType} name already exist`)
+				return
+			}
+		} else {
+			if (checkDuplicate(projects)) {
+				setNameInputErr(`This ${newType} name already exist`)
+				return
+			}
+		}
+		function addProjectRec(
+			items: Project[],
+			folder: string | null
+		): Project[] {
+			if (folder === null) {
+				const newItem: Project =
+					newType === 'folder' ? { name, children: [] } : { name }
+				return [...items, newItem]
+			}
+			return items.map((item) => {
+				if (item.name === folder) {
+					const children = item.children ?? []
+					return {
+						...item,
+						children: addProjectRec(children, null),
+					}
+				}
+				return item
+			})
+		}
 
-    setProjects((prev) => deleteProjectRec(prev, parents))
-  }
+		setProjects((prev) => addProjectRec(prev, addParents))
+		setAddModalOpen(false)
+	}
+	function handleDelete(
+		parents: string | null,
+		nameToDelete: string,
+		type: 'folder' | 'project'
+	) {
+		function deleteProjectRec(
+			items: Project[],
+			path: string | null
+		): Project[] {
+			setDeletePath(`/${parents ? parents + '/' : ''}${nameToDelete}`)
+			if (path == null) {
+				return items.filter((p) => {
+					const isMatch =
+						p.name.toLocaleLowerCase() ==
+						nameToDelete.toLocaleLowerCase()
+					const isTargetType =
+						type == 'folder' ? !!p.children : !p.children
+					return !(isMatch && isTargetType)
+				})
+			}
+			return items.map((item) => {
+				if (
+					item.name.toLocaleLowerCase() === path.toLocaleLowerCase()
+				) {
+					const children = item.children ?? []
+					return {
+						...item,
+						children: deleteProjectRec(children, null),
+					}
+				}
+				return item
+			})
+		}
 
-  return (
-    <>
-      <div className="min-w-60 bg-gray-50 text-black h-screen p-2 overflow-auto space-y-1 border-r border-r-1 border-r-gray-200">
-        <h2 className="text-lg font-bold px-4 py-2 flex justify-between items-center">
-          Projects
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm" variant={"ghost"}>...</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => openAddModal(null, 'project')}>
-                📄 New Project
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => openAddModal(null, 'folder')}>
-                📁 New Folder
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </h2>
-        {projects.map((project) => {
-          return project.children ?
-            <Folder name={project.name} folder_children={project.children} handleDelete={handleDelete} handleCreateProject={openAddModal} key={'folder-' + project.name}/> :
-            <Project name={project.name} key={'project-' + project.name} handleDelete={handleDelete}/>
-        })}
-      </div>
+		setProjects((prev) => deleteProjectRec(prev, parents))
+	}
 
-      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create new {newType}</DialogTitle>
-            <DialogDescription>
-              Name your new {newType}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-2 py-4">
-            <div className="flex flex-col space-y-1">
-              <Label htmlFor="project-name">Name</Label>
-              {nameInputErr && (
-                <p className='text-red-500'>{nameInputErr}</p>
-              )}
-              <p></p>
-              <Input
-                id="project-name"
-                autoFocus
-                value={newName}
-                onChange={(e) => {
-                  setNewName(e.target.value)
-                  if(e.target.value.trim() != '') {
-                    setNameInputErr(null)
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleAddSubmit()
-                  }
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setAddModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddSubmit}>Create</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  )
+	return (
+		<>
+			<div className='min-w-60 bg-gray-50 text-black h-screen p-2 overflow-auto space-y-1 border-r border-r-1 border-r-gray-200'>
+				<h2 className='text-lg font-bold px-4 py-2 flex justify-between items-center'>
+					Projects
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								size='sm'
+								variant={'ghost'}
+							>
+								...
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end'>
+							<DropdownMenuItem
+								onClick={() => openAddModal(null, 'project')}
+							>
+								📄 New Project
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => openAddModal(null, 'folder')}
+							>
+								📁 New Folder
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</h2>
+				{projects.map((project) => {
+					return project.children ? (
+						<Folder
+							name={project.name}
+							folder_children={project.children}
+							handleDelete={handleDelete}
+							handleCreateProject={openAddModal}
+							key={'folder-' + project.name}
+						/>
+					) : (
+						<Project
+							name={project.name}
+							key={'project-' + project.name}
+							handleDelete={handleDelete}
+						/>
+					)
+				})}
+			</div>
+
+			<Dialog
+				open={addModalOpen}
+				onOpenChange={setAddModalOpen}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Create new {newType}</DialogTitle>
+						<DialogDescription>
+							Name your new {newType}
+						</DialogDescription>
+					</DialogHeader>
+					<div className='grid gap-2 py-4'>
+						<div className='flex flex-col space-y-1'>
+							<Label htmlFor='project-name'>Name</Label>
+							{nameInputErr && (
+								<p className='text-red-500'>{nameInputErr}</p>
+							)}
+							<p></p>
+							<Input
+								id='project-name'
+								autoFocus
+								value={newName}
+								onChange={(e) => {
+									setNewName(e.target.value)
+									if (e.target.value.trim() != '') {
+										setNameInputErr(null)
+									}
+								}}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault()
+										handleAddSubmit()
+									}
+								}}
+							/>
+						</div>
+					</div>
+					<div className='flex justify-end space-x-2'>
+						<Button
+							variant='outline'
+							onClick={() => setAddModalOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button onClick={handleAddSubmit}>Create</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+		</>
+	)
 }
