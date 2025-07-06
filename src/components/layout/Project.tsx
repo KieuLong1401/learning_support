@@ -10,11 +10,7 @@ export default function Project({
 }: {
 	name: string
 	folder?: string | null
-	handleDelete: (
-		parents: string | null,
-		nameToDelete: string,
-		type: 'project'
-	) => void
+	handleDelete: (folder: string | null, name: string) => void
 }) {
 	const pathname = usePathname()
 	const path = '/' + (folder ? `${folder}/${name}` : name)
@@ -25,7 +21,7 @@ export default function Project({
 			context_menu_item={[
 				{
 					name: 'delete',
-					callback: () => handleDelete(folder, name, 'project'),
+					callback: () => handleDelete(folder, name),
 				},
 			]}
 		>

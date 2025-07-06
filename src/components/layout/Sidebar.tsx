@@ -21,143 +21,175 @@ import Folder from './Folder'
 import Project from './Project'
 import { usePathname, useRouter } from 'next/navigation'
 
-interface Project {
+export interface IProject {
 	name: string
-	children?: Project[]
+	folder: string | null
+	text: string
 }
 
 const localStorageProjects = 'my_projects'
+const localStorageFolders = 'my_folders'
 
 export default function Sidebar() {
-	const [projects, setProjects] = useState<Project[]>([])
+	const [projects, setProjects] = useState<IProject[]>([])
+	const [folders, setFolders] = useState<string[]>([])
 	const [addModalOpen, setAddModalOpen] = useState(false)
 	const [addParents, setAddParents] = useState<string | null>(null)
 	const [newName, setNewName] = useState('')
 	const [newType, setNewType] = useState<'folder' | 'project'>('project')
 	const [nameInputErr, setNameInputErr] = useState<string | null>(null)
-	const [deletePath, setDeletePath] = useState('')
+	const [deletePath, setDeletePath] = useState<string[]>([])
 
 	const router = useRouter()
 	const pathName = usePathname()
 
 	useEffect(() => {
-		const data = localStorage.getItem(localStorageProjects)
-		if (data) {
-			setProjects(JSON.parse(data))
+		const projectsData = getNewestProjectData()
+		if (projectsData) {
+			setProjects(projectsData)
+		}
+
+		const foldersData = getNewestFolderData()
+		if (foldersData) {
+			setFolders(foldersData)
 		}
 	}, [])
-
 	useEffect(() => {
 		localStorage.setItem(localStorageProjects, JSON.stringify(projects))
 	}, [projects])
 	useEffect(() => {
-		if (deletePath == '') return
-		console.log(pathName, deletePath, pathName == deletePath)
+		localStorage.setItem(localStorageFolders, JSON.stringify(folders))
+	}, [folders])
 
-		if (pathName == deletePath || pathName.startsWith(deletePath + '/')) {
+	useEffect(() => {
+		if (addModalOpen) return
+		setNewName('')
+		setNameInputErr(null)
+		setAddParents(null)
+		setNewType('project')
+	}, [addModalOpen])
+
+	useEffect(() => {
+		if (deletePath.length === 0) return
+
+		if (deletePath.some((deleted) => deleted === pathName)) {
 			router.push('/')
 		}
-		setDeletePath('')
+		setDeletePath([])
 	}, [deletePath, pathName, router])
 
-	function openAddModal(parents: string | null, type: 'folder' | 'project') {
-		setAddParents(parents)
-		setNewName('')
-		setNewType(type)
-		setNameInputErr(null)
+	function getNewestProjectData() {
+		const rawData = localStorage.getItem(localStorageProjects)
+		if (!rawData) return null
+		return JSON.parse(rawData)
+	}
+	function getNewestFolderData() {
+		const rawData = localStorage.getItem(localStorageFolders)
+		if (!rawData) return null
+		return JSON.parse(rawData)
+	}
+
+	function openProjectCreateModal(folder: string | null) {
+		setAddParents(folder)
+		setNewType('project')
+		setAddModalOpen(true)
+	}
+	function openFolderCreateModal() {
+		setAddParents(null)
+		setNewType('folder')
 		setAddModalOpen(true)
 	}
 
+	function createProject(name: string) {
+		const newestProjectData = getNewestProjectData()
+		if (!newestProjectData) return
+
+		const isDuplicated = newestProjectData.some((project: IProject) => {
+			const isSameName = project.name.toLowerCase() == name.toLowerCase()
+			const isSameFolder = project.folder == addParents
+
+			return isSameName && isSameFolder
+		})
+		if (isDuplicated) {
+			setNameInputErr(`This project is already exist`)
+			return
+		}
+
+		setProjects([
+			...newestProjectData,
+			{
+				name: name,
+				folder: addParents,
+				text: '',
+			},
+		])
+	}
+	function createFolder(name: string) {
+		const newestFolderData = getNewestFolderData()
+		if (!newestFolderData) return
+
+		const isDuplicated = newestFolderData.some((folder: string) => {
+			const isSameName = folder.toLowerCase() == name.toLowerCase()
+
+			return isSameName
+		})
+		if (isDuplicated) {
+			setNameInputErr(`This folder is already exist`)
+			return
+		}
+
+		setFolders([...newestFolderData, name])
+	}
 	function handleAddSubmit() {
 		const name = newName.trim()
-
-		const checkDuplicate = (items: Project[]): boolean => {
-			return items.some((p) => {
-				const isSameName =
-					p.name.toLowerCase() === name.toLocaleLowerCase()
-				if (newType === 'folder') return isSameName && !!p.children
-				else return isSameName && !p.children
-			})
-		}
 
 		if (!name) {
 			setNameInputErr('Please use a valid name')
 			return
 		}
-		if (addParents != null) {
-			const parent = projects.find(
-				(p) =>
-					p.name.toLocaleLowerCase() == addParents.toLocaleLowerCase()
-			)
-			if (parent && parent.children && checkDuplicate(parent.children)) {
-				setNameInputErr(`This ${newType} name already exist`)
-				return
-			}
+
+		if (newType == 'project') {
+			createProject(name)
 		} else {
-			if (checkDuplicate(projects)) {
-				setNameInputErr(`This ${newType} name already exist`)
-				return
-			}
-		}
-		function addProjectRec(
-			items: Project[],
-			folder: string | null
-		): Project[] {
-			if (folder === null) {
-				const newItem: Project =
-					newType === 'folder' ? { name, children: [] } : { name }
-				return [...items, newItem]
-			}
-			return items.map((item) => {
-				if (item.name === folder) {
-					const children = item.children ?? []
-					return {
-						...item,
-						children: addProjectRec(children, null),
-					}
-				}
-				return item
-			})
+			createFolder(name)
 		}
 
-		setProjects((prev) => addProjectRec(prev, addParents))
 		setAddModalOpen(false)
 	}
-	function handleDelete(
-		parents: string | null,
-		nameToDelete: string,
-		type: 'folder' | 'project'
-	) {
-		function deleteProjectRec(
-			items: Project[],
-			path: string | null
-		): Project[] {
-			setDeletePath(`/${parents ? parents + '/' : ''}${nameToDelete}`)
-			if (path == null) {
-				return items.filter((p) => {
-					const isMatch =
-						p.name.toLocaleLowerCase() ==
-						nameToDelete.toLocaleLowerCase()
-					const isTargetType =
-						type == 'folder' ? !!p.children : !p.children
-					return !(isMatch && isTargetType)
-				})
-			}
-			return items.map((item) => {
-				if (
-					item.name.toLocaleLowerCase() === path.toLocaleLowerCase()
-				) {
-					const children = item.children ?? []
-					return {
-						...item,
-						children: deleteProjectRec(children, null),
-					}
-				}
-				return item
-			})
-		}
 
-		setProjects((prev) => deleteProjectRec(prev, parents))
+	function deleteProject(folder: string | null, name: string) {
+		setDeletePath([`/${folder ? folder + '/' : ''}${name}`])
+		const newestProjectData = getNewestProjectData()
+		if (!newestProjectData) return
+
+		const newProjects = newestProjectData.filter((project: IProject) => {
+			const isSameName = project.name.toLowerCase() == name.toLowerCase()
+			const isSameFolder = project.folder == folder
+
+			return !(isSameName && isSameFolder)
+		})
+
+		setProjects(newProjects)
+	}
+	function deleteFolder(name: string) {
+		const newestFolderData = getNewestFolderData()
+		const newestProjectData = getNewestProjectData()
+		if (!newestFolderData || !newestProjectData) return
+
+		const deletePaths = newestProjectData
+			.filter((project: IProject) => project.folder === name)
+			.map((project: IProject) => `/${name}/${project.name}`)
+		setDeletePath(deletePaths ? deletePaths : [])
+
+		const newFolders = newestFolderData.filter((folder: string) => {
+			return folder !== name
+		})
+		setFolders(newFolders)
+
+		const newProjects = newestProjectData.filter((project: IProject) => {
+			return project.folder != name
+		})
+		setProjects(newProjects)
 	}
 
 	return (
@@ -176,35 +208,43 @@ export default function Sidebar() {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end'>
 							<DropdownMenuItem
-								onClick={() => openAddModal(null, 'project')}
+								onClick={() => openProjectCreateModal(null)}
 							>
 								📄 New Project
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={() => openAddModal(null, 'folder')}
+								onClick={() => openFolderCreateModal()}
 							>
 								📁 New Folder
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</h2>
-				{projects.map((project) => {
-					return project.children ? (
+				{folders.map((folder: string) => {
+					return (
 						<Folder
-							name={project.name}
-							folder_children={project.children}
-							handleDelete={handleDelete}
-							handleCreateProject={openAddModal}
-							key={'folder-' + project.name}
-						/>
-					) : (
-						<Project
-							name={project.name}
-							key={'project-' + project.name}
-							handleDelete={handleDelete}
+							name={folder}
+							folder_children={projects.filter(
+								(project: IProject) => project.folder == folder
+							)}
+							handleDelete={deleteFolder}
+							handleDeleteProject={deleteProject}
+							handleCreateProject={openProjectCreateModal}
+							key={'folder-' + folder}
 						/>
 					)
 				})}
+				{projects
+					.filter((project) => project.folder === null)
+					.map((project) => {
+						return (
+							<Project
+								key={'project-' + project.name}
+								name={project.name}
+								handleDelete={deleteProject}
+							/>
+						)
+					})}
 			</div>
 
 			<Dialog

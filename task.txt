@@ -4,6 +4,8 @@ quiz generate
     ✅mcq
     true false
 connect to api
+add env file
+✅use project's save
 ✅add concept popup
 ✅project manager
 ✅show context menu when select text

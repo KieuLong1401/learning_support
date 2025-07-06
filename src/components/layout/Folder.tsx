@@ -11,30 +11,27 @@ export default function Folder({
 	folder_children,
 	name,
 	handleDelete,
+	handleDeleteProject,
 	handleCreateProject,
 }: {
-	folder_children: { name: string }[]
+	folder_children: {
+		name: string
+	}[]
 	name: string
-	handleDelete: (
-		parents: string | null,
-		nameToDelete: string,
-		type: 'project' | 'folder'
-	) => void
-	handleCreateProject: (
-		parents: string | null,
-		type: 'folder' | 'project'
-	) => void
+	handleDelete: (name: string) => void
+	handleDeleteProject: (folder: string | null, name: string) => void
+	handleCreateProject: (folder: string | null) => void
 }) {
 	return (
 		<Context
 			context_menu_item={[
 				{
 					name: 'delete',
-					callback: () => handleDelete(null, name, 'folder'),
+					callback: () => handleDelete(name),
 				},
 				{
 					name: 'new project',
-					callback: () => handleCreateProject(name, 'project'),
+					callback: () => handleCreateProject(name),
 				},
 			]}
 		>
@@ -42,7 +39,6 @@ export default function Folder({
 				type='single'
 				collapsible
 				className='w-full'
-				key={name}
 			>
 				<AccordionItem value={name}>
 					<AccordionTrigger className='flex justify-between items-center px-2 pb-3 pt-1 text-left w-full hover:bg-gray-100 rounded-md h-8'>
@@ -51,14 +47,12 @@ export default function Folder({
 						</span>
 					</AccordionTrigger>
 					<AccordionContent className='ml-4 border-l border-black p-0'>
-						{folder_children.map((child) => (
+						{folder_children.map((project) => (
 							<Project
-								name={child.name}
+								key={name + project.name}
+								name={project.name}
 								folder={name}
-								key={name + child.name}
-								handleDelete={() =>
-									handleDelete(name, child.name, 'project')
-								}
+								handleDelete={handleDeleteProject}
 							/>
 						))}
 					</AccordionContent>
