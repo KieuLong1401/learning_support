@@ -6,11 +6,16 @@ import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import QuizDialog from '@/components/quiz/QuizDialog'
 import { sleep } from '@/lib/utils'
+import { IProject } from '@/components/layout/Sidebar'
+
+const localStorageProjects = 'my_projects'
 
 export default function Project(props: {
 	params: Promise<{ slug: string[] }>
 }) {
-	const params = use(props.params)
+	const [slug, setSlug] = useState<string[]>([])
+	const [projectData, setProjectData] = useState<IProject>()
+
 	const [input, setInput] = useState('')
 	const [modalOpen, setModalOpen] = useState(false)
 	const [showContextMenu, setShowContextMenu] = useState(false)
@@ -25,6 +30,54 @@ export default function Project(props: {
 
 	const selectedTextRef = useRef('')
 	const contextMenuRef = useRef<HTMLDivElement | null>(null)
+
+	// get slug
+	useEffect(() => {
+		props.params.then((res) => {
+			setSlug(res.slug)
+		})
+	}, [props])
+
+	// get data
+	useEffect(() => {
+		const rawData = localStorage.getItem(localStorageProjects)
+		if (!rawData || slug.length == 0) return
+
+		const projects = JSON.parse(rawData)
+		const folderName = slug.length == 2 ? slug[0] : null
+		const projectName = slug.length == 2 ? slug[1] : slug[0]
+
+		const currentProjectData = projects.find((project: IProject) => {
+			const isSameName =
+				project.name.toLowerCase() == projectName.toLowerCase()
+			const isSameFolder = project.folder == folderName
+
+			return isSameName && isSameFolder
+		})
+		setProjectData(currentProjectData)
+	}, [slug])
+	// update data
+	useEffect(() => {
+		const rawData = localStorage.getItem(localStorageProjects)
+		if (!rawData || slug.length == 0 || projectData == null) return
+
+		const oldData = JSON.parse(rawData)
+		const folderName = slug.length == 2 ? slug[0] : null
+		const projectName = slug.length == 2 ? slug[1] : slug[0]
+
+		const updatedData = oldData.map((project: IProject) => {
+			const isSameName =
+				project.name.toLowerCase() == projectName.toLowerCase()
+			const isSameFolder = project.folder == folderName
+
+			if (isSameName && isSameFolder) {
+				return projectData
+			}
+			return project
+		})
+
+		localStorage.setItem(localStorageProjects, JSON.stringify(updatedData))
+	}, [projectData, slug])
 
 	// text selection and menu position
 	useEffect(() => {
@@ -120,16 +173,19 @@ export default function Project(props: {
 		<>
 			<main className='flex flex-col max-w-4xl flex-1 overflow-auto mx-auto p-4 space-y-4 max-h-[100vh]'>
 				<h1 className='text-xl'>
-					{params.slug.map((e) => decodeURIComponent(e)).join('/')}
+					{slug.map((e) => decodeURIComponent(e)).join('/')}
 				</h1>
 
 				{textareaErr && <p className='text-red-500'>{textareaErr}</p>}
 
 				<Textarea
 					placeholder='Type here'
-					value={input}
+					value={projectData?.text || ''}
 					onChange={(e) => {
-						setInput(e.target.value)
+						setProjectData({
+							...(projectData as IProject),
+							text: e.target.value,
+						})
 						if (e.target.value.trim() != '') {
 							setTextareaErr(null)
 						}
