@@ -8,36 +8,16 @@ import {
 	DialogTitle,
 } from '../ui/dialog'
 import { Skeleton } from '../ui/skeleton'
-import { sleep } from '@/lib/utils'
 import { Slider } from '../ui/slider'
 import MCQQuiz from './MCQQuiz'
+import server from '../../lib/axios'
 
-const mockMCQRes = [
-	{
-		question_statement: '1which one is the right answer?',
-		answer: 'right answer',
-		options: ['wrong answer 1', 'wrong answer 2', 'wrong answer 3'],
-		context: 'this is the context',
-	},
-	{
-		question_statement: '2which one is the right answer?',
-		answer: 'right answer',
-		options: ['wrong answer 1', 'wrong answer 2', 'wrong answer 3'],
-		context: 'this is the context',
-	},
-	{
-		question_statement: '3which one is the right answer?',
-		answer: 'right answer',
-		options: ['wrong answer 1', 'wrong answer 2', 'wrong answer 3'],
-		context: 'this is the context',
-	},
-	{
-		question_statement: '4which one is the right answer?',
-		answer: 'right answer',
-		options: ['wrong answer 1', 'wrong answer 2', 'wrong answer 3'],
-		context: 'this is the context',
-	},
-]
+interface IMcqQuiz {
+	answer: string
+	context: string
+	options: string[]
+	question_statement: string
+}
 
 export default function QuizDialog({
 	isOpen,
@@ -50,26 +30,28 @@ export default function QuizDialog({
 }) {
 	const [isPending, startTransition] = useTransition()
 	const [mcqCount, setMcqCount] = useState([0])
-	const [tfCount, setTfCount] = useState([0])
+	const [maxMcq, setMaxMcq] = useState<number>(0)
 	const [error, setError] = useState<string | null>(null)
 	const [showQuiz, setShowQuiz] = useState<boolean>(false)
+	const [mcqData, setMcqData] = useState<IMcqQuiz[]>([])
 
 	useEffect(() => {
 		if (!isOpen) {
 			setShowQuiz(false)
 			setError(null)
 			setMcqCount([0])
-			setTfCount([0])
+			setMaxMcq(0)
 			return
 		}
 
 		if (showQuiz) {
 			startTransition(async () => {
 				try {
-					//alter get questions
-					// const res = await server.post('/question', { input_text: input, max_question: 4 });
-					// setQuizGenerateOutput(res.data.question || 'No result');
-					await sleep(10000)
+					const res = await server.post('/generate-mcq', {
+						input_text: text,
+						max_questions: maxMcq,
+					})
+					setMcqData(res.data)
 				} catch (err) {
 					setError(
 						err instanceof Error
@@ -81,8 +63,11 @@ export default function QuizDialog({
 		} else {
 			startTransition(async () => {
 				try {
-					//alter get max count of each question
-					await sleep(1000)
+					const res = await server.post('/valid_mcq_question_count', {
+						input_text: text,
+					})
+
+					setMaxMcq(res.data.valid_mcq_question_count)
 				} catch (err) {
 					setError(
 						err instanceof Error
@@ -92,7 +77,7 @@ export default function QuizDialog({
 				}
 			})
 		}
-	}, [isOpen, showQuiz])
+	}, [isOpen, showQuiz, text, maxMcq])
 
 	const handleSubmitGenerateQuiz = () => {
 		setShowQuiz(true)
@@ -121,7 +106,7 @@ export default function QuizDialog({
 											/>
 										)
 									})
-							: mockMCQRes.map((mcqQuiz, i) => {
+							: mcqData.map((mcqQuiz, i) => {
 									return (
 										<MCQQuiz
 											quiz={mcqQuiz}
@@ -144,15 +129,14 @@ export default function QuizDialog({
 								<label className='block text-sm font-medium mb-1'>
 									MCQ Count
 								</label>
-								<span>{`${mcqCount}/10`}</span>{' '}
-								{/* alter turn into api response */}
+								<span>{`${mcqCount}/${maxMcq}`}</span>{' '}
 							</div>
 							{isPending ? (
 								<Skeleton className='h-10 w-full rounded-md bg-gray-200'></Skeleton>
 							) : (
 								<Slider
 									value={mcqCount}
-									max={10} //alter turn into api response
+									max={maxMcq}
 									min={0}
 									onValueChange={(value) =>
 										setMcqCount(value)
@@ -160,33 +144,7 @@ export default function QuizDialog({
 								/>
 							)}
 						</div>
-						<div>
-							<div className='flex justify-between items-centers'>
-								<label className='block text-sm font-medium mb-1'>
-									True/False Count
-								</label>
-								<span>{`${tfCount}/10`}</span>{' '}
-								{/* alter turn into api response */}
-							</div>
-							{isPending ? (
-								<Skeleton className='h-10 w-full rounded-md bg-gray-200'></Skeleton>
-							) : (
-								<div>
-									<Slider
-										value={tfCount}
-										max={10} //alter turn into api response
-										min={0}
-										onValueChange={(value) =>
-											setTfCount(value)
-										}
-									/>
-								</div>
-							)}
-						</div>
 						<Button
-							// onClick={() => {
-							//   handleSubmitGenerateQuizCustom(mcqCount, tfCount);
-							// }}
 							disabled={isPending}
 							onClick={handleSubmitGenerateQuiz}
 						>

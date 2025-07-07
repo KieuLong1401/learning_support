@@ -1,11 +1,10 @@
 'use client'
 
-import React, { useState, use, useEffect, useRef, useTransition } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import QuizDialog from '@/components/quiz/QuizDialog'
-import { sleep } from '@/lib/utils'
 import { IProject } from '@/components/layout/Sidebar'
 
 const localStorageProjects = 'my_projects'
@@ -16,17 +15,17 @@ export default function Project(props: {
 	const [slug, setSlug] = useState<string[]>([])
 	const [projectData, setProjectData] = useState<IProject>()
 
-	const [input, setInput] = useState('')
+	const [textareaErr, setTextareaErr] = useState<string | null>(null)
+
 	const [modalOpen, setModalOpen] = useState(false)
+	const [showConcept, setShowConcept] = useState<boolean>(false)
+
 	const [showContextMenu, setShowContextMenu] = useState(false)
 	const [contextMenuPosition, setContextMenuPosition] = useState({
 		x: 0,
 		y: 0,
 	})
-	const [showConcept, setShowConcept] = useState<boolean>(false)
-	const [textareaErr, setTextareaErr] = useState<string | null>(null)
 	const [concept, setConcept] = useState('')
-	const [isPendingConcept, startTransitionConcept] = useTransition()
 
 	const selectedTextRef = useRef('')
 	const contextMenuRef = useRef<HTMLDivElement | null>(null)
@@ -94,6 +93,7 @@ export default function Project(props: {
 				selectedTextRef.current = ''
 				setShowContextMenu(false)
 				setShowConcept(false)
+				setConcept('')
 			}
 		}
 
@@ -138,17 +138,23 @@ export default function Project(props: {
 	// fetching concept
 	useEffect(() => {
 		if (!showConcept) return
-		startTransitionConcept(async () => {
-			try {
-				// to api
-				await sleep(2000)
-				setConcept(
-					'asd;lfkjas;dlfkja;lskdfjklasjdflksjdlkfjdkfjksdfjlskdfjlskdjflskdjflksajdflkajsdfklaj'
-				)
-			} catch (err) {
-				console.error(err)
-			}
-		})
+		// to api
+		const eventSource = new EventSource(
+			process.env.NEXT_PUBLIC_SERVER_HOST +
+				`explain_stream?word=${selectedTextRef.current}`
+		)
+
+		eventSource.onmessage = (event) => {
+			const data = event.data
+			setConcept((prev) => prev + data)
+		}
+		eventSource.onerror = () => {
+			eventSource.close()
+		}
+
+		return () => {
+			eventSource.close()
+		}
 	}, [showConcept])
 
 	// prevent concept box from going off-screen
@@ -162,7 +168,7 @@ export default function Project(props: {
 
 	//alter fix handleSubmit method for real api
 	const openModal = () => {
-		if (input.trim() == '') {
+		if ((projectData?.text || '').trim() == '') {
 			setTextareaErr('cannot generate quiz from an empty text')
 			return
 		}
@@ -215,7 +221,7 @@ export default function Project(props: {
 							<h1 className='mb-2 text-lg'>
 								{selectedTextRef.current}
 							</h1>
-							{isPendingConcept ? (
+							{concept == '' ? (
 								<Skeleton className='h-50 w-90 rounded-md bg-gray-200' />
 							) : (
 								<p className='break-words whitespace-normal'>
@@ -237,7 +243,7 @@ export default function Project(props: {
 			<QuizDialog
 				isOpen={modalOpen}
 				setIsOpen={setModalOpen}
-				text={input}
+				text={projectData?.text || ''}
 			/>
 		</>
 	)
