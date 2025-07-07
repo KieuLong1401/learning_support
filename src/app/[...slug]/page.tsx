@@ -28,6 +28,8 @@ export default function Project(props: {
 	})
 	const [concept, setConcept] = useState('')
 
+	const [draggingFile, setDraggingFile] = useState<boolean>(false)
+
 	const selectedTextRef = useRef('')
 	const contextMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -37,7 +39,6 @@ export default function Project(props: {
 			setSlug(res.slug)
 		})
 	}, [props])
-
 	// get data
 	useEffect(() => {
 		const rawData = localStorage.getItem(localStorageProjects)
@@ -156,7 +157,6 @@ export default function Project(props: {
 			eventSource.close()
 		}
 	}, [showConcept])
-
 	// prevent concept box from going off-screen
 	useEffect(() => {
 		if (!showConcept) return
@@ -174,6 +174,43 @@ export default function Project(props: {
 		setModalOpen(true)
 	}
 
+	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		if (!draggingFile) setDraggingFile(true)
+	}
+	const handleDragExit = (e: React.DragEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		if (draggingFile) setDraggingFile(false)
+	}
+	const handleDropFile = (e: React.DragEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		if (draggingFile) setDraggingFile(false)
+
+		const file = e.dataTransfer.files?.[0]
+		if (!file) return
+
+		console.log(file.type)
+
+		switch (file.type) {
+			case 'text/plain':
+				const reader = new FileReader()
+				reader.onload = (e) => {
+					const result = e.target?.result as string
+
+					setProjectData({
+						...(projectData as IProject),
+						text: result,
+					})
+					if (result.trim() != '') {
+						setTextareaErr(null)
+					}
+				}
+
+				reader.readAsText(file)
+				break
+		}
+	}
+
 	return (
 		<>
 			<main className='flex flex-col max-w-4xl flex-1 overflow-auto mx-auto p-4 space-y-4 max-h-[100vh]'>
@@ -183,20 +220,34 @@ export default function Project(props: {
 
 				{textareaErr && <p className='text-red-500'>{textareaErr}</p>}
 
-				<Textarea
-					placeholder='Type here'
-					value={projectData?.text || ''}
-					onChange={(e) => {
-						setProjectData({
-							...(projectData as IProject),
-							text: e.target.value,
-						})
-						if (e.target.value.trim() != '') {
-							setTextareaErr(null)
+				<div
+					onDrop={handleDropFile}
+					onDragOver={handleDragOver}
+					onDragLeave={handleDragExit}
+					className='relative min-h-[30%] max-h-[70vh]'
+				>
+					<Textarea
+						placeholder={
+							draggingFile ? '' : 'Type or drop file here'
 						}
-					}}
-					className='resize-none min-h-[30%] max-h-[70vh] overflow-auto'
-				/>
+						value={projectData?.text || ''}
+						onChange={(e) => {
+							setProjectData({
+								...(projectData as IProject),
+								text: e.target.value,
+							})
+							if (e.target.value.trim() != '') {
+								setTextareaErr(null)
+							}
+						}}
+						className={`resize-none h-full w-full overflow-auto`}
+					/>
+					{draggingFile && (
+						<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
+							<span className='text-blue-500'>Drop Here</span>
+						</div>
+					)}
+				</div>
 
 				<Button
 					onClick={openModal}
