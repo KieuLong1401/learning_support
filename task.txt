@@ -3,7 +3,7 @@ add flash card
 quiz generate
     ✅mcq
     true false
-search in concept tab
+✅search in concept tab
 ✅connect to api
 ✅add env file
 ✅use project's save

@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import QuizDialog from '@/components/quiz/QuizDialog'
 import { IProject } from '@/components/layout/Sidebar'
+import { Search } from 'lucide-react'
 
 const localStorageProjects = 'my_projects'
 
@@ -138,7 +139,6 @@ export default function Project(props: {
 	// fetching concept
 	useEffect(() => {
 		if (!showConcept) return
-		// to api
 		const eventSource = new EventSource(
 			process.env.NEXT_PUBLIC_SERVER_HOST +
 				`explain_stream?word=${selectedTextRef.current}`
@@ -166,7 +166,6 @@ export default function Project(props: {
 		})
 	}, [showConcept])
 
-	//alter fix handleSubmit method for real api
 	const openModal = () => {
 		if ((projectData?.text || '').trim() == '') {
 			setTextareaErr('cannot generate quiz from an empty text')
@@ -218,9 +217,26 @@ export default function Project(props: {
 				>
 					{showConcept ? (
 						<div className='px-4 py-2'>
-							<h1 className='mb-2 text-lg'>
-								{selectedTextRef.current}
-							</h1>
+							<div className='mb-4 flex justify-between items-center'>
+								<h1 className='text-lg'>
+									{selectedTextRef.current}
+								</h1>
+								<a
+									href={`https://www.bing.com/search?&q=${encodeURIComponent(
+										selectedTextRef.current
+									)}`}
+									target='_blank'
+									rel='noopener noreferrer'
+									className='h-full'
+								>
+									<Button
+										className='h-full rounded-full'
+										variant='outline'
+									>
+										<Search size={20} />
+									</Button>
+								</a>
+							</div>
 							{concept == '' ? (
 								<Skeleton className='h-50 w-90 rounded-md bg-gray-200' />
 							) : (
