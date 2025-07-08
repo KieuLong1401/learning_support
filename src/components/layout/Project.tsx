@@ -31,7 +31,7 @@ export default function Project({
 			>
 				<Button
 					variant={isActive ? 'outline' : 'ghost'}
-					className='block w-full justify-start px-2 pb-3 pt-1 h-8 overflow-hidden text-ellipsis whitespace-nowrap text-left'
+					className='block w-full justify-start px-4 pb-3 pt-1 h-8 overflow-hidden text-ellipsis whitespace-nowrap text-left'
 				>
 					{name}
 				</Button>

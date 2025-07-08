@@ -41,7 +41,7 @@ export default function Folder({
 				className='w-full'
 			>
 				<AccordionItem value={name}>
-					<AccordionTrigger className='flex justify-between items-center px-2 pb-3 pt-1 text-left w-full hover:bg-gray-100 rounded-md h-8'>
+					<AccordionTrigger className='flex justify-between items-center px-4 pb-3 pt-1 text-left w-full hover:bg-gray-100 rounded-md h-8'>
 						<span className='block w-full h-full overflow-hidden text-ellipsis whitespace-nowrap'>
 							{name}
 						</span>

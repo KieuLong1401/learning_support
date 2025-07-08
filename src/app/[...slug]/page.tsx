@@ -14,8 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FlashCardContainer from '@/components/flashCard/FlashCardContainer'
 import { IFlashCard } from '@/components/flashCard/FlashCard'
 
-const localStorageProjects = 'my_projects'
-
 export default function Project(props: {
 	params: Promise<{ slug: string[] }>
 }) {
@@ -47,8 +45,9 @@ export default function Project(props: {
 	}, [props])
 	// get data
 	useEffect(() => {
-		//alter fix space in name bug
-		const rawData = localStorage.getItem(localStorageProjects)
+		const rawData = localStorage.getItem(
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects'
+		)
 		if (!rawData || slug.length == 0) return
 
 		const projects = JSON.parse(rawData)
@@ -66,7 +65,9 @@ export default function Project(props: {
 	}, [slug])
 	// update data
 	useEffect(() => {
-		const rawData = localStorage.getItem(localStorageProjects)
+		const rawData = localStorage.getItem(
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects'
+		)
 		if (!rawData || slug.length == 0 || projectData == null) return
 
 		const oldData = JSON.parse(rawData)
@@ -84,7 +85,10 @@ export default function Project(props: {
 			return project
 		})
 
-		localStorage.setItem(localStorageProjects, JSON.stringify(updatedData))
+		localStorage.setItem(
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects',
+			JSON.stringify(updatedData)
+		)
 	}, [projectData, slug])
 
 	useEffect(() => {
@@ -236,6 +240,8 @@ export default function Project(props: {
 	}
 
 	const handleCreateFlashCard = () => {
+		//alter check duplicate
+		//alter pending when the concept is streaming
 		setProjectData({
 			...(projectData as IProject),
 			flashCard: [
@@ -253,8 +259,8 @@ export default function Project(props: {
 	return (
 		<>
 			<main className='flex flex-col max-w-4xl flex-1 mx-auto p-4 space-y-4 h-screen'>
-				<h1 className='text-xl ml-1'>
-					{slug.map((e) => decodeURIComponent(e)).join('/')}
+				<h1 className='text-xl ml-1 font-bold'>
+					{slug.map((e) => decodeURIComponent(e)).join(' / ')}
 				</h1>
 
 				<Tabs
@@ -269,7 +275,7 @@ export default function Project(props: {
 					</TabsList>
 					<TabsContent
 						value='quizzes'
-						className='ml-2 flex-1'
+						className='flex-1'
 					>
 						<div
 							onDrop={handleDropFile}
@@ -315,7 +321,7 @@ export default function Project(props: {
 					</TabsContent>
 					<TabsContent
 						value='flash_cards'
-						className='ml-2 flex-1 flex flex-col overflow-hidden'
+						className='flex-1 flex flex-col overflow-hidden'
 					>
 						<FlashCardContainer
 							flashCardData={projectData?.flashCard || []}

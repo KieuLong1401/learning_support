@@ -21,6 +21,7 @@ import Folder from './Folder'
 import Project from './Project'
 import { usePathname, useRouter } from 'next/navigation'
 import { IFlashCard } from '../flashCard/FlashCard'
+import { Ellipsis, Pyramid } from 'lucide-react'
 
 export interface IProject {
 	name: string
@@ -28,9 +29,6 @@ export interface IProject {
 	text: string
 	flashCard: IFlashCard[]
 }
-
-const localStorageProjects = 'my_projects'
-const localStorageFolders = 'my_folders'
 
 export default function Sidebar() {
 	const [projects, setProjects] = useState<IProject[]>([])
@@ -57,10 +55,16 @@ export default function Sidebar() {
 		}
 	}, [])
 	useEffect(() => {
-		localStorage.setItem(localStorageProjects, JSON.stringify(projects))
+		localStorage.setItem(
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects',
+			JSON.stringify(projects)
+		)
 	}, [projects])
 	useEffect(() => {
-		localStorage.setItem(localStorageFolders, JSON.stringify(folders))
+		localStorage.setItem(
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_FOLDERS || 'my_folders',
+			JSON.stringify(folders)
+		)
 	}, [folders])
 
 	useEffect(() => {
@@ -81,12 +85,16 @@ export default function Sidebar() {
 	}, [deletePath, pathName, router])
 
 	function getNewestProjectData() {
-		const rawData = localStorage.getItem(localStorageProjects)
+		const rawData = localStorage.getItem(
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects'
+		)
 		if (!rawData) return null
 		return JSON.parse(rawData)
 	}
 	function getNewestFolderData() {
-		const rawData = localStorage.getItem(localStorageFolders)
+		const rawData = localStorage.getItem(
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_FOLDERS || 'my_folders'
+		)
 		if (!rawData) return null
 		return JSON.parse(rawData)
 	}
@@ -197,16 +205,19 @@ export default function Sidebar() {
 
 	return (
 		<>
-			<div className='min-w-60 bg-gray-50 text-black h-screen p-2 overflow-auto space-y-1 border-r border-r-1 border-r-gray-200'>
+			<div className='min-w-60 text-black h-screen p-2 overflow-auto space-y-1 border-r border-r-1 border-r-gray-200'>
 				<h2 className='text-lg font-bold px-4 py-2 flex justify-between items-center'>
-					Projects
+					<div className='flex flex-row items-center gap-2'>
+						<Pyramid />
+						<span>name</span>
+					</div>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
 								size='sm'
 								variant={'ghost'}
 							>
-								...
+								<Ellipsis />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end'>
