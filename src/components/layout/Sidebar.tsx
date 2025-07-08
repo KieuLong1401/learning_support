@@ -20,11 +20,13 @@ import {
 import Folder from './Folder'
 import Project from './Project'
 import { usePathname, useRouter } from 'next/navigation'
+import { IFlashCard } from '../flashCard/FlashCard'
 
 export interface IProject {
 	name: string
 	folder: string | null
 	text: string
+	flashCard: IFlashCard[]
 }
 
 const localStorageProjects = 'my_projects'
@@ -121,6 +123,7 @@ export default function Sidebar() {
 				name: name,
 				folder: addParents,
 				text: '',
+				flashCard: [],
 			},
 		])
 	}

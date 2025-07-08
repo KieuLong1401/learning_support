@@ -4,9 +4,15 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
+import { RectangleVertical, Search } from 'lucide-react'
 import QuizDialog from '@/components/quiz/QuizDialog'
+
 import { IProject } from '@/components/layout/Sidebar'
-import { Search } from 'lucide-react'
+
+import mammoth from 'mammoth'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import FlashCardContainer from '@/components/flashCard/FlashCardContainer'
+import { IFlashCard } from '@/components/flashCard/FlashCard'
 
 const localStorageProjects = 'my_projects'
 
@@ -41,6 +47,7 @@ export default function Project(props: {
 	}, [props])
 	// get data
 	useEffect(() => {
+		//alter fix space in name bug
 		const rawData = localStorage.getItem(localStorageProjects)
 		if (!rawData || slug.length == 0) return
 
@@ -79,6 +86,11 @@ export default function Project(props: {
 
 		localStorage.setItem(localStorageProjects, JSON.stringify(updatedData))
 	}, [projectData, slug])
+
+	useEffect(() => {
+		setShowConcept(false)
+		setConcept('')
+	}, [showContextMenu])
 
 	// text selection and menu position
 	useEffect(() => {
@@ -136,7 +148,6 @@ export default function Project(props: {
 			document.removeEventListener('mousedown', handleClickOutside)
 		}
 	}, [showConcept])
-
 	// fetching concept
 	useEffect(() => {
 		if (!showConcept) return
@@ -174,6 +185,12 @@ export default function Project(props: {
 		setModalOpen(true)
 	}
 
+	const extractTextFromDocx = async (file: File): Promise<string> => {
+		const arrayBuffer = await file.arrayBuffer()
+		const result = await mammoth.extractRawText({ arrayBuffer })
+		return result.value
+	}
+
 	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
 		if (!draggingFile) setDraggingFile(true)
@@ -182,14 +199,12 @@ export default function Project(props: {
 		e.preventDefault()
 		if (draggingFile) setDraggingFile(false)
 	}
-	const handleDropFile = (e: React.DragEvent<HTMLDivElement>) => {
+	const handleDropFile = async (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
 		if (draggingFile) setDraggingFile(false)
 
 		const file = e.dataTransfer.files?.[0]
 		if (!file) return
-
-		console.log(file.type)
 
 		switch (file.type) {
 			case 'text/plain':
@@ -208,53 +223,107 @@ export default function Project(props: {
 
 				reader.readAsText(file)
 				break
+			case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+				const extractedText = await extractTextFromDocx(file)
+				setProjectData({
+					...(projectData as IProject),
+					text: extractedText,
+				})
+				if (extractedText.trim() != '') {
+					setTextareaErr(null)
+				}
 		}
+	}
+
+	const handleCreateFlashCard = () => {
+		setProjectData({
+			...(projectData as IProject),
+			flashCard: [
+				{
+					label: selectedTextRef.current,
+					content: concept,
+				},
+				...(projectData?.flashCard as IFlashCard[]),
+			],
+		})
+
+		setShowContextMenu(false)
 	}
 
 	return (
 		<>
-			<main className='flex flex-col max-w-4xl flex-1 overflow-auto mx-auto p-4 space-y-4 max-h-[100vh]'>
-				<h1 className='text-xl'>
+			<main className='flex flex-col max-w-4xl flex-1 mx-auto p-4 space-y-4 h-screen'>
+				<h1 className='text-xl ml-1'>
 					{slug.map((e) => decodeURIComponent(e)).join('/')}
 				</h1>
 
-				{textareaErr && <p className='text-red-500'>{textareaErr}</p>}
-
-				<div
-					onDrop={handleDropFile}
-					onDragOver={handleDragOver}
-					onDragLeave={handleDragExit}
-					className='relative min-h-[30%] max-h-[70vh]'
+				<Tabs
+					defaultValue='quizzes'
+					className='flex-1 flex flex-col overflow-hidden'
 				>
-					<Textarea
-						placeholder={
-							draggingFile ? '' : 'Type or drop file here'
-						}
-						value={projectData?.text || ''}
-						onChange={(e) => {
-							setProjectData({
-								...(projectData as IProject),
-								text: e.target.value,
-							})
-							if (e.target.value.trim() != '') {
-								setTextareaErr(null)
-							}
-						}}
-						className={`resize-none h-full w-full overflow-auto`}
-					/>
-					{draggingFile && (
-						<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
-							<span className='text-blue-500'>Drop Here</span>
+					<TabsList>
+						<TabsTrigger value='quizzes'>Quizzes</TabsTrigger>
+						<TabsTrigger value='flash_cards'>
+							Flash Cards
+						</TabsTrigger>
+					</TabsList>
+					<TabsContent
+						value='quizzes'
+						className='ml-2 flex-1'
+					>
+						<div
+							onDrop={handleDropFile}
+							onDragOver={handleDragOver}
+							onDragLeave={handleDragExit}
+							className='relative flex flex-col space-y-2 min-h-[30%] max-h-[70vh]'
+						>
+							{textareaErr && (
+								<p className='text-red-500 mb-2'>
+									{textareaErr}
+								</p>
+							)}
+							<Textarea
+								placeholder={
+									draggingFile ? '' : 'Type or drop file here'
+								}
+								value={projectData?.text || ''}
+								onChange={(e) => {
+									setProjectData({
+										...(projectData as IProject),
+										text: e.target.value,
+									})
+									if (e.target.value.trim() != '') {
+										setTextareaErr(null)
+									}
+								}}
+								className={`resize-none min-h-[30vh] h-full w-full overflow-auto`}
+							/>
+							{draggingFile && (
+								<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
+									<span className='text-blue-500'>
+										Drop Here
+									</span>
+								</div>
+							)}
+							<Button
+								onClick={openModal}
+								className='w-40 ml-auto'
+							>
+								Generate Quiz
+							</Button>
 						</div>
-					)}
-				</div>
-
-				<Button
-					onClick={openModal}
-					className='w-40 ml-auto'
-				>
-					Generate Quiz
-				</Button>
+					</TabsContent>
+					<TabsContent
+						value='flash_cards'
+						className='ml-2 flex-1 flex flex-col overflow-hidden'
+					>
+						<FlashCardContainer
+							flashCardData={projectData?.flashCard || []}
+							projectData={projectData}
+							setProjectData={setProjectData}
+						/>
+					</TabsContent>
+				</Tabs>
 			</main>
 
 			{showContextMenu && (
@@ -272,21 +341,30 @@ export default function Project(props: {
 								<h1 className='text-lg'>
 									{selectedTextRef.current}
 								</h1>
-								<a
-									href={`https://www.bing.com/search?&q=${encodeURIComponent(
-										selectedTextRef.current
-									)}`}
-									target='_blank'
-									rel='noopener noreferrer'
-									className='h-full'
-								>
+								<div className='flex gap-2 h-full'>
 									<Button
+										variant={'outline'}
 										className='h-full rounded-full'
-										variant='outline'
+										onClick={handleCreateFlashCard}
 									>
-										<Search size={20} />
+										<RectangleVertical />
 									</Button>
-								</a>
+									<a
+										href={`https://www.bing.com/search?&q=${encodeURIComponent(
+											selectedTextRef.current
+										)}`}
+										target='_blank'
+										rel='noopener noreferrer'
+										className='h-full'
+									>
+										<Button
+											className='h-full rounded-full'
+											variant='outline'
+										>
+											<Search size={20} />
+										</Button>
+									</a>
+								</div>
 							</div>
 							{concept == '' ? (
 								<Skeleton className='h-50 w-90 rounded-md bg-gray-200' />

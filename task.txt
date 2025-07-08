@@ -1,8 +1,12 @@
-clean code
-add flash card
 quiz generate
     ✅mcq
     true false
+clean code
+add flash card
+drop file
+    ✅txt
+    ✅docx
+    pdf
 ✅search in concept tab
 ✅connect to api
 ✅add env file
