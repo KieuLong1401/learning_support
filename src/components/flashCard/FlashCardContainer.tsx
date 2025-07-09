@@ -24,7 +24,7 @@ export default function FlashCardContainer({
 				Create new flash card
 			</Button>
 			<div className='flex-1 overflow-auto'>
-				<div className='grid gap-4 grid-cols-[repeat(auto-fit,_minmax(300px,_1fr))]'>
+				<div className='grid gap-4 grid-cols-[repeat(auto-fit,_minmax(250px,_1fr))]'>
 					{flashCardData.map((e, i) => {
 						return (
 							<FlashCard

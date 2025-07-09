@@ -124,7 +124,7 @@ export default function FlashCardModal({
 						Create your new flash card
 					</DialogDescription>
 				</DialogHeader>
-				<div className='flex flex-col gap-2 max-w-full'>
+				<div className='flex flex-col gap-2 max-w-fulls overflow-hidden p-1'>
 					{titleError && (
 						<p className='text-red-500 text-sm ml-1'>
 							{titleError}
@@ -145,7 +145,7 @@ export default function FlashCardModal({
 						</p>
 					)}
 					<Textarea
-						className='h-70 resize-none max-w-full break-words whitespace-pre-wrap'
+						className='resize-none max-h-70 h-70 w-full overflow-auto break-words whitespace-pre-wrap'
 						placeholder='Content'
 						value={contentInput}
 						onChange={(e) => {

@@ -38,7 +38,7 @@ export default function FlashCard({
 
 	return (
 		<>
-			<Card className='h-100 px-6'>
+			<Card className='h-80 px-6'>
 				<CardHeader className='p-0'>
 					<CardTitle className='font-bold text-2xl'>
 						{data.label}

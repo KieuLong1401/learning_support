@@ -288,29 +288,33 @@ export default function Document(props: {
 									{textareaErr}
 								</p>
 							)}
-							<Textarea
-								placeholder={
-									draggingFile ? '' : 'Type or drop file here'
-								}
-								value={documentData?.text || ''}
-								onChange={(e) => {
-									setDocumentData({
-										...(documentData as IDocument),
-										text: e.target.value,
-									})
-									if (e.target.value.trim() != '') {
-										setTextareaErr(null)
+							<div className='px-1'>
+								<Textarea
+									placeholder={
+										draggingFile
+											? ''
+											: 'Type or drop file here'
 									}
-								}}
-								className={`resize-none min-h-[30vh] h-full w-full overflow-auto`}
-							/>
-							{draggingFile && (
-								<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
-									<span className='text-blue-500'>
-										Drop Here
-									</span>
-								</div>
-							)}
+									value={documentData?.text || ''}
+									onChange={(e) => {
+										setDocumentData({
+											...(documentData as IDocument),
+											text: e.target.value,
+										})
+										if (e.target.value.trim() != '') {
+											setTextareaErr(null)
+										}
+									}}
+									className={`resize-none min-h-[30vh] h-full w-full overflow-auto`}
+								/>
+								{draggingFile && (
+									<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
+										<span className='text-blue-500'>
+											Drop Here
+										</span>
+									</div>
+								)}
+							</div>
 							<Button
 								onClick={openModal}
 								className='w-40 ml-auto'
