@@ -3,7 +3,7 @@ import { Button } from '../ui/button'
 import { usePathname } from 'next/navigation'
 import Context from './Context'
 
-export default function Project({
+export default function Document({
 	name,
 	folder = null,
 	handleDelete,
@@ -20,7 +20,7 @@ export default function Project({
 		<Context
 			context_menu_item={[
 				{
-					name: 'delete',
+					name: 'Delete',
 					callback: () => handleDelete(folder, name),
 				},
 			]}

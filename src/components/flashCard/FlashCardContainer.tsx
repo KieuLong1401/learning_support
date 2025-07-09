@@ -2,16 +2,16 @@ import { Dispatch, useState } from 'react'
 import { Button } from '../ui/button'
 import FlashCardModal from './FlashCardModal'
 import FlashCard, { IFlashCard } from './FlashCard'
-import { IProject } from '../layout/Sidebar'
+import { IDocument } from '../layout/Sidebar'
 
 export default function FlashCardContainer({
 	flashCardData,
-	projectData,
-	setProjectData,
+	documentData: documentData,
+	setDocumentData: setDocumentData,
 }: {
 	flashCardData: IFlashCard[]
-	projectData: IProject | undefined
-	setProjectData: Dispatch<React.SetStateAction<IProject | undefined>>
+	documentData: IDocument | undefined
+	setDocumentData: Dispatch<React.SetStateAction<IDocument | undefined>>
 }) {
 	const [openModal, setOpenModal] = useState(false)
 
@@ -30,8 +30,8 @@ export default function FlashCardContainer({
 							<FlashCard
 								key={i}
 								data={e}
-								projectData={projectData}
-								setProjectData={setProjectData}
+								documentData={documentData}
+								setDocumentData={setDocumentData}
 							/>
 						)
 					})}
@@ -40,8 +40,8 @@ export default function FlashCardContainer({
 			<FlashCardModal
 				open={openModal}
 				onOpenChange={setOpenModal}
-				projectData={projectData}
-				setProjectData={setProjectData}
+				documentData={documentData}
+				setDocumentData={setDocumentData}
 			/>
 		</div>
 	)

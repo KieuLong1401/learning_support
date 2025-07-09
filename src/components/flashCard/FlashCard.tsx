@@ -1,5 +1,5 @@
 import { Dispatch, useState } from 'react'
-import { IProject } from '../layout/Sidebar'
+import { IDocument } from '../layout/Sidebar'
 import { Button } from '../ui/button'
 import {
 	Card,
@@ -18,20 +18,20 @@ export interface IFlashCard {
 
 export default function FlashCard({
 	data,
-	projectData,
-	setProjectData,
+	documentData,
+	setDocumentData,
 }: {
 	data: IFlashCard
-	projectData: IProject | undefined
-	setProjectData: Dispatch<React.SetStateAction<IProject | undefined>>
+	documentData: IDocument | undefined
+	setDocumentData: Dispatch<React.SetStateAction<IDocument | undefined>>
 }) {
 	const [openModal, setOpenModal] = useState(false)
 
 	const handleDelete = () => {
-		setProjectData({
-			...(projectData as IProject),
+		setDocumentData({
+			...(documentData as IDocument),
 			flashCard:
-				projectData?.flashCard.filter((e) => e.label != data.label) ||
+				documentData?.flashCard.filter((e) => e.label != data.label) ||
 				[],
 		})
 	}
@@ -67,8 +67,8 @@ export default function FlashCard({
 			<FlashCardModal
 				open={openModal}
 				onOpenChange={setOpenModal}
-				projectData={projectData}
-				setProjectData={setProjectData}
+				documentData={documentData}
+				setDocumentData={setDocumentData}
 				title={data.label}
 				content={data.content}
 			/>

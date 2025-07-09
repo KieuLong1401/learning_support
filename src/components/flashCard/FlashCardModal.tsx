@@ -9,21 +9,21 @@ import {
 } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
-import { IProject } from '../layout/Sidebar'
+import { IDocument } from '../layout/Sidebar'
 import { IFlashCard } from './FlashCard'
 
 export default function FlashCardModal({
 	open,
 	onOpenChange,
-	projectData,
-	setProjectData,
+	documentData,
+	setDocumentData,
 	title = '',
 	content = '',
 }: {
 	open: boolean
 	onOpenChange: Dispatch<SetStateAction<boolean>>
-	projectData: IProject | undefined
-	setProjectData: Dispatch<React.SetStateAction<IProject | undefined>>
+	documentData: IDocument | undefined
+	setDocumentData: Dispatch<React.SetStateAction<IDocument | undefined>>
 	title?: string
 	content?: string
 }) {
@@ -48,7 +48,7 @@ export default function FlashCardModal({
 			return
 		}
 
-		const isDuplicated = projectData?.flashCard.some((flashCard) => {
+		const isDuplicated = documentData?.flashCard.some((flashCard) => {
 			const isSameName =
 				flashCard.label.toLowerCase() == titleInput.toLocaleLowerCase()
 			return isSameName
@@ -59,14 +59,14 @@ export default function FlashCardModal({
 			return
 		}
 
-		setProjectData({
-			...(projectData as IProject),
+		setDocumentData({
+			...(documentData as IDocument),
 			flashCard: [
 				{
 					label: titleInput,
 					content: contentInput,
 				},
-				...(projectData?.flashCard as IFlashCard[]),
+				...(documentData?.flashCard as IFlashCard[]),
 			],
 		})
 
@@ -79,7 +79,7 @@ export default function FlashCardModal({
 			return
 		}
 
-		const currentFlashCards = projectData?.flashCard.filter(
+		const currentFlashCards = documentData?.flashCard.filter(
 			(e) => e.label != title
 		)
 
@@ -94,10 +94,10 @@ export default function FlashCardModal({
 			return
 		}
 
-		setProjectData({
-			...(projectData as IProject),
+		setDocumentData({
+			...(documentData as IDocument),
 			flashCard:
-				projectData?.flashCard.map((flashCard) => {
+				documentData?.flashCard.map((flashCard) => {
 					if (flashCard.label == title) {
 						return {
 							label: titleInput,
@@ -131,7 +131,7 @@ export default function FlashCardModal({
 						</p>
 					)}
 					<Input
-						id='project-name'
+						id='document-name'
 						placeholder='Title'
 						value={titleInput}
 						onChange={(e) => {

@@ -5,33 +5,33 @@ import {
 	AccordionTrigger,
 } from '../ui/accordion'
 import Context from './Context'
-import Project from './Project'
+import Document from './Document'
 
 export default function Folder({
 	folder_children,
 	name,
 	handleDelete,
-	handleDeleteProject,
-	handleCreateProject,
+	handleDeleteDocument,
+	handleCreateDocument,
 }: {
 	folder_children: {
 		name: string
 	}[]
 	name: string
 	handleDelete: (name: string) => void
-	handleDeleteProject: (folder: string | null, name: string) => void
-	handleCreateProject: (folder: string | null) => void
+	handleDeleteDocument: (folder: string | null, name: string) => void
+	handleCreateDocument: (folder: string | null) => void
 }) {
 	return (
 		<Context
 			context_menu_item={[
 				{
-					name: 'delete',
+					name: 'Delete',
 					callback: () => handleDelete(name),
 				},
 				{
-					name: 'new project',
-					callback: () => handleCreateProject(name),
+					name: 'New Document',
+					callback: () => handleCreateDocument(name),
 				},
 			]}
 		>
@@ -47,12 +47,12 @@ export default function Folder({
 						</span>
 					</AccordionTrigger>
 					<AccordionContent className='ml-4 border-l border-black p-0'>
-						{folder_children.map((project) => (
-							<Project
-								key={name + project.name}
-								name={project.name}
+						{folder_children.map((document) => (
+							<Document
+								key={name + document.name}
+								name={document.name}
 								folder={name}
-								handleDelete={handleDeleteProject}
+								handleDelete={handleDeleteDocument}
 							/>
 						))}
 					</AccordionContent>

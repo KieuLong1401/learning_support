@@ -18,12 +18,12 @@ import {
 	DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import Folder from './Folder'
-import Project from './Project'
+import Document from './Document'
 import { usePathname, useRouter } from 'next/navigation'
 import { IFlashCard } from '../flashCard/FlashCard'
-import { Ellipsis, Pyramid } from 'lucide-react'
+import { Ellipsis, File, Folders, Pyramid } from 'lucide-react'
 
-export interface IProject {
+export interface IDocument {
 	name: string
 	folder: string | null
 	text: string
@@ -31,12 +31,12 @@ export interface IProject {
 }
 
 export default function Sidebar() {
-	const [projects, setProjects] = useState<IProject[]>([])
+	const [documents, setDocuments] = useState<IDocument[]>([])
 	const [folders, setFolders] = useState<string[]>([])
 	const [addModalOpen, setAddModalOpen] = useState(false)
-	const [addParents, setAddParents] = useState<string | null>(null)
+	const [parentFolder, setParentFolder] = useState<string | null>(null)
 	const [newName, setNewName] = useState('')
-	const [newType, setNewType] = useState<'folder' | 'project'>('project')
+	const [newType, setNewType] = useState<'folder' | 'document'>('document')
 	const [nameInputErr, setNameInputErr] = useState<string | null>(null)
 	const [deletePath, setDeletePath] = useState<string[]>([])
 
@@ -44,9 +44,9 @@ export default function Sidebar() {
 	const pathName = usePathname()
 
 	useEffect(() => {
-		const projectsData = getNewestProjectData()
-		if (projectsData) {
-			setProjects(projectsData)
+		const documentsData = getNewestDocumentData()
+		if (documentsData) {
+			setDocuments(documentsData)
 		}
 
 		const foldersData = getNewestFolderData()
@@ -56,10 +56,10 @@ export default function Sidebar() {
 	}, [])
 	useEffect(() => {
 		localStorage.setItem(
-			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects',
-			JSON.stringify(projects)
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_DOCUMENTS || 'my_documents',
+			JSON.stringify(documents)
 		)
-	}, [projects])
+	}, [documents])
 	useEffect(() => {
 		localStorage.setItem(
 			process.env.NEXT_PUBLIC_LOCAL_STORAGE_FOLDERS || 'my_folders',
@@ -71,8 +71,8 @@ export default function Sidebar() {
 		if (addModalOpen) return
 		setNewName('')
 		setNameInputErr(null)
-		setAddParents(null)
-		setNewType('project')
+		setParentFolder(null)
+		setNewType('document')
 	}, [addModalOpen])
 
 	useEffect(() => {
@@ -84,9 +84,9 @@ export default function Sidebar() {
 		setDeletePath([])
 	}, [deletePath, pathName, router])
 
-	function getNewestProjectData() {
+	function getNewestDocumentData() {
 		const rawData = localStorage.getItem(
-			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects'
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_DOCUMENTS || 'my_documents'
 		)
 		if (!rawData) return null
 		return JSON.parse(rawData)
@@ -99,37 +99,37 @@ export default function Sidebar() {
 		return JSON.parse(rawData)
 	}
 
-	function openProjectCreateModal(folder: string | null) {
-		setAddParents(folder)
-		setNewType('project')
+	function openDocumentCreateModal(folder: string | null) {
+		setParentFolder(folder)
+		setNewType('document')
 		setAddModalOpen(true)
 	}
 	function openFolderCreateModal() {
-		setAddParents(null)
+		setParentFolder(null)
 		setNewType('folder')
 		setAddModalOpen(true)
 	}
 
-	function createProject(name: string) {
-		const newestProjectData = getNewestProjectData()
-		if (!newestProjectData) return
+	function createDocument(name: string) {
+		const newestDocumentData = getNewestDocumentData()
+		if (!newestDocumentData) return
 
-		const isDuplicated = newestProjectData.some((project: IProject) => {
-			const isSameName = project.name.toLowerCase() == name.toLowerCase()
-			const isSameFolder = project.folder == addParents
+		const isDuplicated = newestDocumentData.some((document: IDocument) => {
+			const isSameName = document.name.toLowerCase() == name.toLowerCase()
+			const isSameFolder = document.folder == parentFolder
 
 			return isSameName && isSameFolder
 		})
 		if (isDuplicated) {
-			setNameInputErr(`This project is already exist`)
+			setNameInputErr(`This document is already exist`)
 			return
 		}
 
-		setProjects([
-			...newestProjectData,
+		setDocuments([
+			...newestDocumentData,
 			{
 				name: name,
-				folder: addParents,
+				folder: parentFolder,
 				text: '',
 				flashCard: [],
 			},
@@ -159,8 +159,8 @@ export default function Sidebar() {
 			return
 		}
 
-		if (newType == 'project') {
-			createProject(name)
+		if (newType == 'document') {
+			createDocument(name)
 		} else {
 			createFolder(name)
 		}
@@ -168,28 +168,31 @@ export default function Sidebar() {
 		setAddModalOpen(false)
 	}
 
-	function deleteProject(folder: string | null, name: string) {
+	function deleteDocument(folder: string | null, name: string) {
 		setDeletePath([`/${folder ? folder + '/' : ''}${name}`])
-		const newestProjectData = getNewestProjectData()
-		if (!newestProjectData) return
+		const newestDocumentData = getNewestDocumentData()
+		if (!newestDocumentData) return
 
-		const newProjects = newestProjectData.filter((project: IProject) => {
-			const isSameName = project.name.toLowerCase() == name.toLowerCase()
-			const isSameFolder = project.folder == folder
+		const newDocuments = newestDocumentData.filter(
+			(document: IDocument) => {
+				const isSameName =
+					document.name.toLowerCase() == name.toLowerCase()
+				const isSameFolder = document.folder == folder
 
-			return !(isSameName && isSameFolder)
-		})
+				return !(isSameName && isSameFolder)
+			}
+		)
 
-		setProjects(newProjects)
+		setDocuments(newDocuments)
 	}
 	function deleteFolder(name: string) {
 		const newestFolderData = getNewestFolderData()
-		const newestProjectData = getNewestProjectData()
-		if (!newestFolderData || !newestProjectData) return
+		const newestDocumentData = getNewestDocumentData()
+		if (!newestFolderData || !newestDocumentData) return
 
-		const deletePaths = newestProjectData
-			.filter((project: IProject) => project.folder === name)
-			.map((project: IProject) => `/${name}/${project.name}`)
+		const deletePaths = newestDocumentData
+			.filter((document: IDocument) => document.folder === name)
+			.map((document: IDocument) => `/${name}/${document.name}`)
 		setDeletePath(deletePaths ? deletePaths : [])
 
 		const newFolders = newestFolderData.filter((folder: string) => {
@@ -197,10 +200,12 @@ export default function Sidebar() {
 		})
 		setFolders(newFolders)
 
-		const newProjects = newestProjectData.filter((project: IProject) => {
-			return project.folder != name
-		})
-		setProjects(newProjects)
+		const newDocuments = newestDocumentData.filter(
+			(document: IDocument) => {
+				return document.folder != name
+			}
+		)
+		setDocuments(newDocuments)
 	}
 
 	return (
@@ -222,14 +227,14 @@ export default function Sidebar() {
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end'>
 							<DropdownMenuItem
-								onClick={() => openProjectCreateModal(null)}
+								onClick={() => openDocumentCreateModal(null)}
 							>
-								📄 New Project
+								<File /> New Document
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={() => openFolderCreateModal()}
 							>
-								📁 New Folder
+								<Folders /> New Folder
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -238,24 +243,25 @@ export default function Sidebar() {
 					return (
 						<Folder
 							name={folder}
-							folder_children={projects.filter(
-								(project: IProject) => project.folder == folder
+							folder_children={documents.filter(
+								(document: IDocument) =>
+									document.folder == folder
 							)}
 							handleDelete={deleteFolder}
-							handleDeleteProject={deleteProject}
-							handleCreateProject={openProjectCreateModal}
+							handleDeleteDocument={deleteDocument}
+							handleCreateDocument={openDocumentCreateModal}
 							key={'folder-' + folder}
 						/>
 					)
 				})}
-				{projects
-					.filter((project) => project.folder === null)
-					.map((project) => {
+				{documents
+					.filter((document) => document.folder === null)
+					.map((document) => {
 						return (
-							<Project
-								key={'project-' + project.name}
-								name={project.name}
-								handleDelete={deleteProject}
+							<Document
+								key={'document-' + document.name}
+								name={document.name}
+								handleDelete={deleteDocument}
 							/>
 						)
 					})}
@@ -274,13 +280,13 @@ export default function Sidebar() {
 					</DialogHeader>
 					<div className='grid gap-2 py-4'>
 						<div className='flex flex-col space-y-1'>
-							<Label htmlFor='project-name'>Name</Label>
+							<Label htmlFor='document-name'>Name</Label>
 							{nameInputErr && (
 								<p className='text-red-500'>{nameInputErr}</p>
 							)}
 							<p></p>
 							<Input
-								id='project-name'
+								id='document-name'
 								autoFocus
 								value={newName}
 								onChange={(e) => {

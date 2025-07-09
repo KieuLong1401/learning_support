@@ -7,18 +7,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { RectangleVertical, Search } from 'lucide-react'
 import QuizDialog from '@/components/quiz/QuizDialog'
 
-import { IProject } from '@/components/layout/Sidebar'
+import { IDocument } from '@/components/layout/Sidebar'
 
 import mammoth from 'mammoth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FlashCardContainer from '@/components/flashCard/FlashCardContainer'
 import { IFlashCard } from '@/components/flashCard/FlashCard'
 
-export default function Project(props: {
+export default function Document(props: {
 	params: Promise<{ slug: string[] }>
 }) {
 	const [slug, setSlug] = useState<string[]>([])
-	const [projectData, setProjectData] = useState<IProject>()
+	const [documentData, setDocumentData] = useState<IDocument>()
 
 	const [textareaErr, setTextareaErr] = useState<string | null>(null)
 
@@ -46,56 +46,56 @@ export default function Project(props: {
 	// get data
 	useEffect(() => {
 		const rawData = localStorage.getItem(
-			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects'
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_DOCUMENTS || 'my_documents'
 		)
 		if (!rawData || slug.length == 0) return
 
-		const projects = JSON.parse(rawData)
+		const documents = JSON.parse(rawData)
 		const folderName = slug.length == 2 ? slug[0] : null
-		const projectName = slug.length == 2 ? slug[1] : slug[0]
+		const documentName = slug.length == 2 ? slug[1] : slug[0]
 
-		const currentProjectData = projects.find((project: IProject) => {
+		const currentDocumentData = documents.find((document: IDocument) => {
 			const isSameName =
-				project.name.toLowerCase() == projectName.toLowerCase()
-			const isSameFolder = project.folder == folderName
+				document.name.toLowerCase() == documentName.toLowerCase()
+			const isSameFolder = document.folder == folderName
 
 			return isSameName && isSameFolder
 		})
-		setProjectData(currentProjectData)
+		setDocumentData(currentDocumentData)
 	}, [slug])
 	// update data
 	useEffect(() => {
 		const rawData = localStorage.getItem(
-			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects'
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_DOCUMENTS || 'my_documents'
 		)
-		if (!rawData || slug.length == 0 || projectData == null) return
+		if (!rawData || slug.length == 0 || documentData == null) return
 
 		const oldData = JSON.parse(rawData)
 		const folderName = slug.length == 2 ? slug[0] : null
-		const projectName = slug.length == 2 ? slug[1] : slug[0]
+		const documentName = slug.length == 2 ? slug[1] : slug[0]
 
-		const updatedData = oldData.map((project: IProject) => {
+		const updatedData = oldData.map((document: IDocument) => {
 			const isSameName =
-				project.name.toLowerCase() == projectName.toLowerCase()
-			const isSameFolder = project.folder == folderName
+				document.name.toLowerCase() == documentName.toLowerCase()
+			const isSameFolder = document.folder == folderName
 
 			if (isSameName && isSameFolder) {
-				return projectData
+				return documentData
 			}
-			return project
+			return document
 		})
 
 		localStorage.setItem(
-			process.env.NEXT_PUBLIC_LOCAL_STORAGE_PROJECTS || 'my_projects',
+			process.env.NEXT_PUBLIC_LOCAL_STORAGE_DOCUMENTS || 'my_documents',
 			JSON.stringify(updatedData)
 		)
-	}, [projectData, slug])
+	}, [documentData, slug])
 
+	// reset context menu state
 	useEffect(() => {
 		setShowConcept(false)
 		setConcept('')
 	}, [showContextMenu])
-
 	// text selection and menu position
 	useEffect(() => {
 		const handleSelectionChange = () => {
@@ -182,7 +182,7 @@ export default function Project(props: {
 	}, [showConcept])
 
 	const openModal = () => {
-		if ((projectData?.text || '').trim() == '') {
+		if ((documentData?.text || '').trim() == '') {
 			setTextareaErr('cannot generate quiz from an empty text')
 			return
 		}
@@ -216,8 +216,8 @@ export default function Project(props: {
 				reader.onload = (e) => {
 					const result = e.target?.result as string
 
-					setProjectData({
-						...(projectData as IProject),
+					setDocumentData({
+						...(documentData as IDocument),
 						text: result,
 					})
 					if (result.trim() != '') {
@@ -229,8 +229,8 @@ export default function Project(props: {
 				break
 			case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
 				const extractedText = await extractTextFromDocx(file)
-				setProjectData({
-					...(projectData as IProject),
+				setDocumentData({
+					...(documentData as IDocument),
 					text: extractedText,
 				})
 				if (extractedText.trim() != '') {
@@ -242,14 +242,14 @@ export default function Project(props: {
 	const handleCreateFlashCard = () => {
 		//alter check duplicate
 		//alter pending when the concept is streaming
-		setProjectData({
-			...(projectData as IProject),
+		setDocumentData({
+			...(documentData as IDocument),
 			flashCard: [
 				{
 					label: selectedTextRef.current,
 					content: concept,
 				},
-				...(projectData?.flashCard as IFlashCard[]),
+				...(documentData?.flashCard as IFlashCard[]),
 			],
 		})
 
@@ -292,10 +292,10 @@ export default function Project(props: {
 								placeholder={
 									draggingFile ? '' : 'Type or drop file here'
 								}
-								value={projectData?.text || ''}
+								value={documentData?.text || ''}
 								onChange={(e) => {
-									setProjectData({
-										...(projectData as IProject),
+									setDocumentData({
+										...(documentData as IDocument),
 										text: e.target.value,
 									})
 									if (e.target.value.trim() != '') {
@@ -324,9 +324,9 @@ export default function Project(props: {
 						className='flex-1 flex flex-col overflow-hidden'
 					>
 						<FlashCardContainer
-							flashCardData={projectData?.flashCard || []}
-							projectData={projectData}
-							setProjectData={setProjectData}
+							flashCardData={documentData?.flashCard || []}
+							documentData={documentData}
+							setDocumentData={setDocumentData}
 						/>
 					</TabsContent>
 				</Tabs>
@@ -394,7 +394,7 @@ export default function Project(props: {
 			<QuizDialog
 				isOpen={modalOpen}
 				setIsOpen={setModalOpen}
-				text={projectData?.text || ''}
+				text={documentData?.text || ''}
 			/>
 		</>
 	)

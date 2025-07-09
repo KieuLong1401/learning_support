@@ -1,12 +1,16 @@
+highlight trong text
+cham diem sau khi hoan thanh quiz
+
+
 Lumen
 → Latin nghĩa là "ánh sáng" → biểu tượng cho "ánh sáng tri thức"
 → 라틴어는 "빛"을 의미한다 → "지식의 빛"을 상징한다.
 
 Mnemo
 → Rút gọn từ mnemonic – kỹ thuật ghi nhớ trong học tập
-→ 학습에 대한 기억 기술 - 미네모닉에서 축약한다.
+→ 학습에 대한 기억 기술 - mnemonic에서 축약한다.
 
-Kairo (hoặc Kairos)
+Kairo (Kairos)
 → Từ Hy Lạp: thời khắc "chín muồi", hoàn hảo để làm một điều gì đó → tượng trưng cho thời điểm học hiệu quả
 → 그리스어: 무언가를 하기에 완벽한 "숙성"의 순간 → 효과적인 학습 시간을 상징한다.
 
@@ -16,7 +20,7 @@ Aether
 
 Noera
 → Từ gốc Hy Lạp noēsis – hành động của tư duy, nhận thức
-→ 그리스 어원 no ē 시스 - 사고와 인식의 행동
+→ 그리스 어원 noēsis - 사고와 인식의 행동
 
 Lucerna
 → Latin: "cây đèn", hình ảnh của việc soi sáng kiến thức
@@ -26,7 +30,7 @@ Soma
 → Trong triết học: “thể xác” – đối lập với “tâm trí” (psyche), mang cảm giác về việc tích hợp trí óc và thân thể khi học
 → 심신(心身, )은 마음(心身)과 반대되는 개념으로, 심신(心身)과 심신(心身)을 통합하는 것을 말한다.
 
-Arqive (đọc gần giống Archive)
+Arqive (Archive)
 → Gợi cảm giác về nơi lưu trữ tri thức – nhưng viết cách điệu, dễ branding
 → 지식 저장소에 대한 감각을 불러일으키지만 스타일리쉬하고 브랜딩하기 쉽다.
 
@@ -37,7 +41,3 @@ Eleva
 Sapien
 → Từ Homo Sapiens – loài "có trí khôn" → gợi cảm giác trí tuệ, tiến hoá tri thức
 → '지혜로운' 호모 사피엔스 → 지적 감각, 지식의 진화
-
-
-
-sun, brain, book-marked, book, atom, notebook, pyramid
