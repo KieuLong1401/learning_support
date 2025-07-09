@@ -211,10 +211,10 @@ export default function Sidebar() {
 	return (
 		<>
 			<div className='min-w-60 text-black h-screen p-2 overflow-auto space-y-1 border-r border-r-1 border-r-gray-200'>
-				<h2 className='text-lg font-bold px-4 py-2 flex justify-between items-center'>
+				<h2 className='px-2 py-2 flex justify-between items-center mb-2'>
 					<div className='flex flex-row items-center gap-2'>
 						<Pyramid />
-						<span>name</span>
+						<span className='text-xl font-bold mb-1'>Aether</span>
 					</div>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>

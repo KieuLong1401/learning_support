@@ -3,6 +3,7 @@ import { Button } from '../ui/button'
 import FlashCardModal from './FlashCardModal'
 import FlashCard, { IFlashCard } from './FlashCard'
 import { IDocument } from '../layout/Sidebar'
+import FlashCardViewer from './FlashCardViewer'
 
 export default function FlashCardContainer({
 	flashCardData,
@@ -14,9 +15,17 @@ export default function FlashCardContainer({
 	setDocumentData: Dispatch<React.SetStateAction<IDocument | undefined>>
 }) {
 	const [openModal, setOpenModal] = useState(false)
+	const [openShow, setOpenShow] = useState(false)
 
 	return (
 		<div className='flex flex-col flex-1 overflow-hidden'>
+			<Button
+				variant={'outline'}
+				onClick={() => setOpenShow(true)}
+				className='mb-2'
+			>
+				Flashcards Viewer
+			</Button>
 			<Button
 				onClick={() => setOpenModal(true)}
 				className='mb-4'
@@ -42,6 +51,11 @@ export default function FlashCardContainer({
 				onOpenChange={setOpenModal}
 				documentData={documentData}
 				setDocumentData={setDocumentData}
+			/>
+			<FlashCardViewer
+				open={openShow}
+				onOpenChange={setOpenShow}
+				flashCardData={flashCardData}
 			/>
 		</div>
 	)
