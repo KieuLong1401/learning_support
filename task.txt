@@ -1,6 +1,6 @@
 highlight trong text
 cham diem sau khi hoan thanh quiz
-
+flashcard show
 
 Lumen
 → Latin nghĩa là "ánh sáng" → biểu tượng cho "ánh sáng tri thức"
