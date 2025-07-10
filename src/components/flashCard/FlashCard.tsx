@@ -9,7 +9,7 @@ import {
 	CardTitle,
 } from '../ui/card'
 import FlashCardModal from './FlashCardModal'
-import { Delete, DeleteIcon, Pencil, XIcon } from 'lucide-react'
+import { Pencil, XIcon } from 'lucide-react'
 
 export interface IFlashCard {
 	label: string

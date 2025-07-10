@@ -46,6 +46,7 @@ export default function FlashCardContainer({
 					})}
 				</div>
 			</div>
+			{/* alter change text for modify modal */}
 			<FlashCardModal
 				open={openModal}
 				onOpenChange={setOpenModal}

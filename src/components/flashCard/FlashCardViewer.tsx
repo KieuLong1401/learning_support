@@ -8,6 +8,7 @@ import {
 } from '../ui/carousel'
 import { IFlashCard } from './FlashCard'
 import FlashCardTwoSide from './FlashCardTwoSide'
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '../ui/drawer'
 
 export default function FlashCardViewer({
 	open,
@@ -19,18 +20,27 @@ export default function FlashCardViewer({
 	onOpenChange: Dispatch<SetStateAction<boolean>>
 }) {
 	return (
-		<Carousel>
-			<CarouselContent>
-				{flashCardData.map((flashCard, i) => {
-					return (
-						<CarouselItem key={i}>
-							<FlashCardTwoSide flashCard={flashCard} />
-						</CarouselItem>
-					)
-				})}
-			</CarouselContent>
-			<CarouselPrevious />
-			<CarouselNext />
-		</Carousel>
+		<Drawer open={open} onOpenChange={onOpenChange}>
+			<DrawerContent>
+				<DrawerHeader>
+					<DrawerTitle>Flashcards</DrawerTitle>
+				</DrawerHeader>
+				<div className='px-30 pb-20 max-h-[80vh] h-[80vh] flex items-center justify-center'>
+					<Carousel className='max-w-100'>
+						<CarouselContent>
+							{flashCardData.map((flashCard, i) => {
+								return (
+									<CarouselItem key={i}>
+										<FlashCardTwoSide flashCard={flashCard} />
+									</CarouselItem>
+								)
+							})}
+						</CarouselContent>
+						<CarouselPrevious />
+						<CarouselNext />
+					</Carousel>
+				</div>
+			</DrawerContent>
+		</Drawer>
 	)
 }
