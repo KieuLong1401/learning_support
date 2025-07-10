@@ -1,16 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { useEffect, useState } from 'react'
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '../ui/dialog'
-import { Label } from '../ui/label'
-import { Input } from '../ui/input'
+import { useEffect, useRef, useState } from 'react'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -22,6 +13,7 @@ import Document from './Document'
 import { usePathname, useRouter } from 'next/navigation'
 import { IFlashCard } from '../flashCard/FlashCard'
 import { Ellipsis, File, Folders, Pyramid } from 'lucide-react'
+import DocumentModal from './DocumentModal'
 
 export interface IDocument {
 	name: string
@@ -35,10 +27,11 @@ export default function Sidebar() {
 	const [folders, setFolders] = useState<string[]>([])
 	const [addModalOpen, setAddModalOpen] = useState(false)
 	const [parentFolder, setParentFolder] = useState<string | null>(null)
-	const [newName, setNewName] = useState('')
 	const [newType, setNewType] = useState<'folder' | 'document'>('document')
-	const [nameInputErr, setNameInputErr] = useState<string | null>(null)
 	const [deletePath, setDeletePath] = useState<string[]>([])
+	const [isScrolled, setIsScrolled] = useState(false)
+	
+	const scrollRef = useRef<HTMLDivElement>(null)
 
 	const router = useRouter()
 	const pathName = usePathname()
@@ -55,6 +48,25 @@ export default function Sidebar() {
 		}
 	}, [])
 	useEffect(() => {
+		const handleScroll = () => {
+			if (scrollRef.current) {
+				setIsScrolled(scrollRef.current.scrollTop > 0);
+			}
+		};
+	
+		const current = scrollRef.current;
+		if (current) {
+			current.addEventListener('scroll', handleScroll);
+		}
+	
+		return () => {
+			if (current) {
+				current.removeEventListener('scroll', handleScroll);
+			}
+		};
+	}, []);
+	
+	useEffect(() => {
 		localStorage.setItem(
 			process.env.NEXT_PUBLIC_LOCAL_STORAGE_DOCUMENTS || 'my_documents',
 			JSON.stringify(documents)
@@ -67,13 +79,7 @@ export default function Sidebar() {
 		)
 	}, [folders])
 
-	useEffect(() => {
-		if (addModalOpen) return
-		setNewName('')
-		setNameInputErr(null)
-		setParentFolder(null)
-		setNewType('document')
-	}, [addModalOpen])
+	
 
 	useEffect(() => {
 		if (deletePath.length === 0) return
@@ -108,64 +114,6 @@ export default function Sidebar() {
 		setParentFolder(null)
 		setNewType('folder')
 		setAddModalOpen(true)
-	}
-
-	function createDocument(name: string) {
-		const newestDocumentData = getNewestDocumentData()
-		if (!newestDocumentData) return
-
-		const isDuplicated = newestDocumentData.some((document: IDocument) => {
-			const isSameName = document.name.toLowerCase() == name.toLowerCase()
-			const isSameFolder = document.folder == parentFolder
-
-			return isSameName && isSameFolder
-		})
-		if (isDuplicated) {
-			setNameInputErr(`This document is already exist`)
-			return
-		}
-
-		setDocuments([
-			...newestDocumentData,
-			{
-				name: name,
-				folder: parentFolder,
-				text: '',
-				flashCard: [],
-			},
-		])
-	}
-	function createFolder(name: string) {
-		const newestFolderData = getNewestFolderData()
-		if (!newestFolderData) return
-
-		const isDuplicated = newestFolderData.some((folder: string) => {
-			const isSameName = folder.toLowerCase() == name.toLowerCase()
-
-			return isSameName
-		})
-		if (isDuplicated) {
-			setNameInputErr(`This folder is already exist`)
-			return
-		}
-
-		setFolders([...newestFolderData, name])
-	}
-	function handleAddSubmit() {
-		const name = newName.trim()
-
-		if (!name) {
-			setNameInputErr('Please use a valid name')
-			return
-		}
-
-		if (newType == 'document') {
-			createDocument(name)
-		} else {
-			createFolder(name)
-		}
-
-		setAddModalOpen(false)
 	}
 
 	function deleteDocument(folder: string | null, name: string) {
@@ -210,8 +158,8 @@ export default function Sidebar() {
 
 	return (
 		<>
-			<div className='min-w-60 text-black h-screen p-2 overflow-auto space-y-1 border-r border-r-1 border-r-gray-200'>
-				<h2 className='px-2 py-2 flex justify-between items-center mb-2'>
+			<div className='flex flex-col min-w-60 text-black h-screen p-2 overflow-hidden space-y-1 border-r border-r-1 border-r-gray-200'>
+				<h2 className={`px-2 py-2 flex justify-between items-center mb-2 ${isScrolled ? 'shadow-[0_4px_4px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
 					<div className='flex flex-row items-center gap-2'>
 						<Pyramid />
 						<span className='text-xl font-bold mb-1'>Aether</span>
@@ -239,82 +187,54 @@ export default function Sidebar() {
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</h2>
-				{folders.map((folder: string) => {
-					return (
-						<Folder
-							name={folder}
-							folder_children={documents.filter(
-								(document: IDocument) =>
-									document.folder == folder
-							)}
-							handleDelete={deleteFolder}
-							handleDeleteDocument={deleteDocument}
-							handleCreateDocument={openDocumentCreateModal}
-							key={'folder-' + folder}
-						/>
-					)
-				})}
-				{documents
-					.filter((document) => document.folder === null)
-					.map((document) => {
+				<div className='overflow-auto h-full' ref={scrollRef}>
+					{folders.map((folder: string) => {
 						return (
-							<Document
-								key={'document-' + document.name}
-								name={document.name}
-								handleDelete={deleteDocument}
+							<Folder
+								key={'folder-' + folder}
+								name={folder}
+								folder_children={documents.filter(
+									(document: IDocument) =>
+										document.folder == folder
+								)}
+								handleDelete={deleteFolder}
+								handleDeleteDocument={deleteDocument}
+								handleCreateDocument={openDocumentCreateModal}
+								setDocuments={setDocuments} 
+								setFolders={setFolders} 
+								getNewestDocumentData={getNewestDocumentData}
+								getNewestFolderData={getNewestFolderData}
 							/>
 						)
 					})}
+					{documents
+						.filter((document) => document.folder === null)
+						.map((document) => {
+							return (
+								<Document
+									key={'document-' + document.name}
+									name={document.name}
+									handleDelete={deleteDocument}
+									setDocuments={setDocuments} 
+									setFolders={setFolders} 
+									getNewestDocumentData={getNewestDocumentData}
+									getNewestFolderData={getNewestFolderData}
+								/>
+							)
+						})}
+				</div>
 			</div>
 
-			<Dialog
-				open={addModalOpen}
-				onOpenChange={setAddModalOpen}
-			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Create new {newType}</DialogTitle>
-						<DialogDescription>
-							Name your new {newType}
-						</DialogDescription>
-					</DialogHeader>
-					<div className='grid gap-2 py-4'>
-						<div className='flex flex-col space-y-1'>
-							<Label htmlFor='document-name'>Name</Label>
-							{nameInputErr && (
-								<p className='text-red-500'>{nameInputErr}</p>
-							)}
-							<p></p>
-							<Input
-								id='document-name'
-								autoFocus
-								value={newName}
-								onChange={(e) => {
-									setNewName(e.target.value)
-									if (e.target.value.trim() != '') {
-										setNameInputErr(null)
-									}
-								}}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter') {
-										e.preventDefault()
-										handleAddSubmit()
-									}
-								}}
-							/>
-						</div>
-					</div>
-					<div className='flex justify-end space-x-2'>
-						<Button
-							variant='outline'
-							onClick={() => setAddModalOpen(false)}
-						>
-							Cancel
-						</Button>
-						<Button onClick={handleAddSubmit}>Create</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
+			<DocumentModal 
+				addModalOpen={addModalOpen} 
+				setAddModalOpen={setAddModalOpen} 
+				newType={newType}
+				setDocuments={setDocuments} 
+				setFolders={setFolders} 
+				parentFolder={parentFolder}
+				getNewestDocumentData={getNewestDocumentData}
+				getNewestFolderData={getNewestFolderData}
+			/>
 		</>
 	)
 }
