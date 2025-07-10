@@ -119,9 +119,9 @@ export default function FlashCardModal({
 		>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Create new flash card</DialogTitle>
+					<DialogTitle>{isModify ? 'Modify the Flashcard' : 'Create new Flashcard'}</DialogTitle>
 					<DialogDescription>
-						Create your new flash card
+						{isModify ? 'Modify your Flashcard' : 'Create your new Flashcard'}
 					</DialogDescription>
 				</DialogHeader>
 				<div className='flex flex-col gap-2 max-w-fulls overflow-hidden p-1'>

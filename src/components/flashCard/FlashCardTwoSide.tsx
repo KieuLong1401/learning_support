@@ -10,7 +10,7 @@ export default function FlashCardTwoSide({
 	const [showContent, setShowContent] = useState(false)
 
 	return (
-		<Card>
+		<Card className='border-2 border-black'>
 			<CardContent onClick={() => setShowContent((pre) => !pre)}>
 				{!showContent ? (
 					<span className='h-100 flex justify-center items-center text-2xl font-bold pointer-event-none select-none'>
