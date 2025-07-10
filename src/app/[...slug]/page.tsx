@@ -13,6 +13,7 @@ import mammoth from 'mammoth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FlashCardContainer from '@/components/flashCard/FlashCardContainer'
 import { IFlashCard } from '@/components/flashCard/FlashCard'
+import { toast } from 'sonner'
 
 export default function Document(props: {
 	params: Promise<{ slug: string[] }>
@@ -31,11 +32,16 @@ export default function Document(props: {
 		y: 0,
 	})
 	const [concept, setConcept] = useState('')
+	const [isStreaming, setIsStreaming] = useState(false)
 
 	const [draggingFile, setDraggingFile] = useState<boolean>(false)
 
+	const [highlightParts, setHighlightParts] = useState<[number, number][]>([[3, 55]])
+
 	const selectedTextRef = useRef('')
 	const contextMenuRef = useRef<HTMLDivElement | null>(null)
+	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+	const highlightRef = useRef<HTMLDivElement | null>(null)
 
 	// get slug
 	useEffect(() => {
@@ -90,6 +96,10 @@ export default function Document(props: {
 			JSON.stringify(updatedData)
 		)
 	}, [documentData, slug])
+
+	useEffect(() => {
+		syncScroll()
+	  }, [documentData?.text]);
 
 	// reset context menu state
 	useEffect(() => {
@@ -155,6 +165,8 @@ export default function Document(props: {
 	// fetching concept
 	useEffect(() => {
 		if (!showConcept) return
+		setIsStreaming(true)
+
 		const eventSource = new EventSource(
 			process.env.NEXT_PUBLIC_SERVER_HOST +
 				`explain_stream?word=${selectedTextRef.current}`
@@ -162,14 +174,20 @@ export default function Document(props: {
 
 		eventSource.onmessage = (event) => {
 			const data = event.data
-			setConcept((prev) => prev + data)
+			if(data == '[DONE]') {
+				setIsStreaming(false)
+			} else {
+				setConcept((prev) => prev + data)
+			}
 		}
 		eventSource.onerror = () => {
 			eventSource.close()
+			setIsStreaming(false)
 		}
 
 		return () => {
 			eventSource.close()
+			setIsStreaming(false)
 		}
 	}, [showConcept])
 	// prevent concept box from going off-screen
@@ -197,7 +215,12 @@ export default function Document(props: {
 
 	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
-		if (!draggingFile) setDraggingFile(true)
+
+		const hasFiles = Array.from(e.dataTransfer.items).some(
+			(item) => item.kind === 'file'
+		  )
+
+		if (!draggingFile && hasFiles) setDraggingFile(true)
 	}
 	const handleDragExit = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
@@ -240,20 +263,70 @@ export default function Document(props: {
 	}
 
 	const handleCreateFlashCard = () => {
-		//alter check duplicate
-		//alter pending when the concept is streaming
-		setDocumentData({
-			...(documentData as IDocument),
-			flashCard: [
-				{
-					label: selectedTextRef.current,
-					content: concept,
-				},
-				...(documentData?.flashCard as IFlashCard[]),
-			],
+		const flashCardData = documentData?.flashCard
+
+		const isDuplicated = flashCardData?.some((flashCard: IFlashCard) => {
+			return flashCard.label == selectedTextRef.current
 		})
 
+		if(isDuplicated) {
+			toast('Duplicated')
+		} else {
+			setDocumentData({
+				...(documentData as IDocument),
+				flashCard: [
+					{
+						label: selectedTextRef.current,
+						content: concept,
+					},
+					...(documentData?.flashCard as IFlashCard[]),
+				],
+			})
+		}
+
+
 		setShowContextMenu(false)
+	}
+
+	const syncScroll = () => {
+		if (!textareaRef.current || !highlightRef.current) return;
+	
+		highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+		highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+	}
+	function escapeHTML(str: string) {
+		return str
+		  .replace(/&/g, "&amp;")
+		  .replace(/</g, "&lt;")
+		  .replace(/>/g, "&gt;")
+		  .replace(/"/g, "&quot;")
+		  .replace(/'/g, "&#039;");
+	}
+	function getHighlightedText(text: string, ranges: [number, number][]) {
+		if (!ranges.length) return escapeHTML(text);
+	  
+		// Sort ranges để xử lý theo thứ tự và tránh overlap
+		ranges.sort((a, b) => a[0] - b[0]);
+	  
+		let result = "";
+		let currentIndex = 0;
+	  
+		for (const [start, end] of ranges) {
+		  // Nếu range không hợp lệ, bỏ qua
+		  if (start >= end || start < 0 || end > text.length) continue;
+	  
+		  // Thêm phần trước đoạn highlight
+		  const before = escapeHTML(text.slice(currentIndex, start));
+		  const highlighted = `<mark>${escapeHTML(text.slice(start, end))}</mark>`;
+	  
+		  result += before + highlighted;
+		  currentIndex = end;
+		}
+	  
+		// Thêm phần còn lại sau đoạn cuối cùng
+		result += escapeHTML(text.slice(currentIndex));
+	  
+		return result;
 	}
 
 	return (
@@ -288,8 +361,17 @@ export default function Document(props: {
 									{textareaErr}
 								</p>
 							)}
-							<div className='px-1'>
+							<div className='px-1 relative'>
+								<div 
+									ref={highlightRef} 
+									className='absolute rounded-md border px-3 py-2 md:pr-[calc(var(--scrollbar-width))] outline-none md:text-sm min-h-[30vh] h-full w-full overflow-y-auto overflow-x-hidden hide-scrollbar z-2 whitespace-pre-wrap break-words'
+									dangerouslySetInnerHTML={{
+										__html: getHighlightedText((documentData?.text ? documentData?.text : ''), highlightParts)
+									}}
+								>
+								</div>
 								<Textarea
+									ref={textareaRef}
 									placeholder={
 										draggingFile
 											? ''
@@ -305,7 +387,8 @@ export default function Document(props: {
 											setTextareaErr(null)
 										}
 									}}
-									className={`resize-none min-h-[30vh] h-full w-full overflow-auto`}
+									onScroll={syncScroll}
+									className={`relative resize-none min-h-[30vh] h-full w-full max-h-[70vh] overflow-auto bg-transparent z-2`}
 								/>
 								{draggingFile && (
 									<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
@@ -353,6 +436,7 @@ export default function Document(props: {
 								</h1>
 								<div className='flex gap-2 h-full'>
 									<Button
+										disabled={isStreaming}
 										variant={'outline'}
 										className='h-full rounded-full'
 										onClick={handleCreateFlashCard}
