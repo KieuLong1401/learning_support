@@ -1,7 +1,8 @@
 theme
 hightlight cau sai
 cham diem sau khi hoan thanh quiz
-highlight trong text
+한글 file
+bo phan chon so luong cau hoi
 
 Lumen
 → Latin nghĩa là "ánh sáng" → biểu tượng cho "ánh sáng tri thức"

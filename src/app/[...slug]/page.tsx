@@ -36,12 +36,14 @@ export default function Document(props: {
 
 	const [draggingFile, setDraggingFile] = useState<boolean>(false)
 
-	const [highlightParts, setHighlightParts] = useState<[number, number][]>([[3, 55]])
-
 	const selectedTextRef = useRef('')
 	const contextMenuRef = useRef<HTMLDivElement | null>(null)
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const highlightRef = useRef<HTMLDivElement | null>(null)
+	const selectedTextAreaRef = useRef({
+		start: 0,
+		end: 0,
+	})
 
 	// get slug
 	useEffect(() => {
@@ -99,7 +101,7 @@ export default function Document(props: {
 
 	useEffect(() => {
 		syncScroll()
-	  }, [documentData?.text]);
+	}, [documentData?.text])
 
 	// reset context menu state
 	useEffect(() => {
@@ -126,14 +128,21 @@ export default function Document(props: {
 		}
 
 		const handleMouseUp = (e: MouseEvent) => {
+			const activeElement = document.activeElement as HTMLTextAreaElement
+
 			const selectedText = selectedTextRef.current
 			const isFromTextarea =
 				document.activeElement?.tagName === 'TEXTAREA'
 
 			if (selectedText && isFromTextarea) {
+				selectedTextAreaRef.current = {
+					start: activeElement.selectionStart,
+					end: activeElement.selectionEnd,
+				}
+
 				setContextMenuPosition({
 					x: Math.min(e.clientX, window.innerWidth - 230),
-					y: e.clientY + 15,
+					y: e.clientY + 20,
 				})
 				setShowContextMenu(true)
 			}
@@ -174,7 +183,7 @@ export default function Document(props: {
 
 		eventSource.onmessage = (event) => {
 			const data = event.data
-			if(data == '[DONE]') {
+			if (data == '[DONE]') {
 				setIsStreaming(false)
 			} else {
 				setConcept((prev) => prev + data)
@@ -218,7 +227,7 @@ export default function Document(props: {
 
 		const hasFiles = Array.from(e.dataTransfer.items).some(
 			(item) => item.kind === 'file'
-		  )
+		)
 
 		if (!draggingFile && hasFiles) setDraggingFile(true)
 	}
@@ -269,7 +278,7 @@ export default function Document(props: {
 			return flashCard.label == selectedTextRef.current
 		})
 
-		if(isDuplicated) {
+		if (isDuplicated) {
 			toast('Duplicated')
 		} else {
 			setDocumentData({
@@ -284,54 +293,127 @@ export default function Document(props: {
 			})
 		}
 
-
 		setShowContextMenu(false)
 	}
 
 	const syncScroll = () => {
-		if (!textareaRef.current || !highlightRef.current) return;
-	
-		highlightRef.current.scrollTop = textareaRef.current.scrollTop;
-		highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+		if (!textareaRef.current || !highlightRef.current) return
+
+		highlightRef.current.scrollTop = textareaRef.current.scrollTop
+		highlightRef.current.scrollLeft = textareaRef.current.scrollLeft
 	}
-	function escapeHTML(str: string) {
+	const escapeHTML = (str: string) => {
 		return str
-		  .replace(/&/g, "&amp;")
-		  .replace(/</g, "&lt;")
-		  .replace(/>/g, "&gt;")
-		  .replace(/"/g, "&quot;")
-		  .replace(/'/g, "&#039;");
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#039;')
 	}
-	function getHighlightedText(text: string, ranges: [number, number][]) {
-		if (!ranges.length) return escapeHTML(text);
-	  
+	const getHighlightedText = (text: string, ranges: [number, number][]) => {
+		if (!ranges.length) return escapeHTML(text)
+
 		// Sort ranges để xử lý theo thứ tự và tránh overlap
-		ranges.sort((a, b) => a[0] - b[0]);
-	  
-		let result = "";
-		let currentIndex = 0;
-	  
+		ranges.sort((a, b) => a[0] - b[0])
+
+		let result = ''
+		let currentIndex = 0
+
 		for (const [start, end] of ranges) {
-		  // Nếu range không hợp lệ, bỏ qua
-		  if (start >= end || start < 0 || end > text.length) continue;
-	  
-		  // Thêm phần trước đoạn highlight
-		  const before = escapeHTML(text.slice(currentIndex, start));
-		  const highlighted = `<mark>${escapeHTML(text.slice(start, end))}</mark>`;
-	  
-		  result += before + highlighted;
-		  currentIndex = end;
+			// Nếu range không hợp lệ, bỏ qua
+			if (start >= end || start < 0 || end > text.length) continue
+
+			// Thêm phần trước đoạn highlight
+			const before = escapeHTML(text.slice(currentIndex, start))
+			const highlighted = `<mark>${escapeHTML(
+				text.slice(start, end)
+			)}</mark>`
+
+			result += before + highlighted
+			currentIndex = end
 		}
-	  
+
 		// Thêm phần còn lại sau đoạn cuối cùng
-		result += escapeHTML(text.slice(currentIndex));
-	  
-		return result;
+		result += escapeHTML(text.slice(currentIndex))
+
+		return result
+	}
+	const mergeRanges = (ranges: [number, number][]): [number, number][] => {
+		if (!ranges.length) return []
+
+		// Sắp xếp theo start
+		ranges.sort((a, b) => a[0] - b[0])
+
+		const merged: [number, number][] = []
+		let [start, end] = ranges[0]
+
+		for (let i = 1; i < ranges.length; i++) {
+			const [nextStart, nextEnd] = ranges[i]
+
+			if (nextStart <= end) {
+				// Gộp nếu chồng nhau
+				end = Math.max(end, nextEnd)
+			} else {
+				merged.push([start, end])
+				start = nextStart
+				end = nextEnd
+			}
+		}
+		merged.push([start, end])
+
+		return merged
+	}
+	function unhighlightParts(
+		highlights: [number, number][],
+		removeRange: [number, number]
+	): [number, number][] {
+		const [removeStart, removeEnd] = removeRange
+		const result: [number, number][] = []
+
+		for (const [start, end] of highlights) {
+			// Không giao nhau
+			if (end <= removeStart || start >= removeEnd) {
+				result.push([start, end])
+			}
+			// Giao nhau một phần
+			else {
+				if (start < removeStart) {
+					result.push([start, Math.max(start, removeStart)])
+				}
+				if (end > removeEnd) {
+					result.push([Math.min(end, removeEnd), end])
+				}
+			}
+		}
+
+		return result
+	}
+	const highlight = () => {
+		const start = selectedTextAreaRef.current.start
+		const end = selectedTextAreaRef.current.end
+		setDocumentData((pre) => {
+			if (!pre) return pre
+			return {
+				...pre,
+				highlight: mergeRanges([...pre?.highlight, [start, end]]),
+			}
+		})
+	}
+	const clearHighlight = () => {
+		const start = selectedTextAreaRef.current.start
+		const end = selectedTextAreaRef.current.end
+		setDocumentData((pre) => {
+			if (!pre) return pre
+			return {
+				...pre,
+				highlight: unhighlightParts(pre?.highlight, [start, end]),
+			}
+		})
 	}
 
 	return (
 		<>
-			<main className='flex flex-col max-w-4xl flex-1 mx-auto p-4 space-y-4 h-screen'>
+			<main className='flex flex-col max-w-4xl flex-1 mx-auto p-4 space-y-4 h-screen overflow-hidden'>
 				<h1 className='text-xl ml-1 font-bold'>
 					{slug.map((e) => decodeURIComponent(e)).join(' / ')}
 				</h1>
@@ -362,14 +444,20 @@ export default function Document(props: {
 								</p>
 							)}
 							<div className='px-1 relative'>
-								<div 
-									ref={highlightRef} 
-									className='absolute rounded-md border px-3 py-2 md:pr-[calc(var(--scrollbar-width))] outline-none md:text-sm min-h-[30vh] h-full w-full overflow-y-auto overflow-x-hidden hide-scrollbar z-2 whitespace-pre-wrap break-words'
+								<div
+									ref={highlightRef}
+									className={`leading-relaxed tracking-wide absolute rounded-md border px-3 py-2 pr-5 outline-none md:text-sm min-h-[30vh] h-full w-full overflow-y-scroll overflow-x-hidden hide-scrollbar z-2 whitespace-pre-wrap break-words`}
 									dangerouslySetInnerHTML={{
-										__html: getHighlightedText((documentData?.text ? documentData?.text : ''), highlightParts)
+										__html: getHighlightedText(
+											documentData?.text
+												? documentData?.text
+												: '',
+											documentData
+												? documentData.highlight
+												: []
+										),
 									}}
-								>
-								</div>
+								></div>
 								<Textarea
 									ref={textareaRef}
 									placeholder={
@@ -388,7 +476,8 @@ export default function Document(props: {
 										}
 									}}
 									onScroll={syncScroll}
-									className={`relative resize-none min-h-[30vh] h-full w-full max-h-[70vh] overflow-auto bg-transparent z-2`}
+									className={`relative resize-none min-h-[30vh] h-full w-full max-h-[70vh] overflow-auto bg-transparent z-2 hide-scrollbar text-lg leading-relaxed tracking-wide`}
+									spellCheck={false}
 								/>
 								{draggingFile && (
 									<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
@@ -422,7 +511,7 @@ export default function Document(props: {
 			{showContextMenu && (
 				<div
 					ref={contextMenuRef}
-					className='absolute z-50 max-w-100 p-1 bg-white shadow-md border rounded-md animate-in fade-in'
+					className='absolute flex flex-col z-50 max-w-100 p-1 bg-white shadow-md border rounded-md animate-in fade-in'
 					style={{
 						top: contextMenuPosition.y,
 						left: contextMenuPosition.x,
@@ -469,13 +558,29 @@ export default function Document(props: {
 							)}
 						</div>
 					) : (
-						<Button
-							onClick={() => setShowConcept(true)}
-							variant={'ghost'}
-							className='w-52 h-8 text-left justify-start rounded-sm'
-						>
-							Get concept
-						</Button>
+						<>
+							<Button
+								onClick={() => setShowConcept(true)}
+								variant={'ghost'}
+								className='w-52 h-8 text-left justify-start rounded-sm'
+							>
+								Get Concept
+							</Button>
+							<Button
+								onClick={highlight}
+								variant={'ghost'}
+								className='w-52 h-8 text-left justify-start rounded-sm'
+							>
+								Highlight
+							</Button>
+							<Button
+								onClick={clearHighlight}
+								variant={'ghost'}
+								className='w-52 h-8 text-left justify-start rounded-sm'
+							>
+								Clear Highlight
+							</Button>
+						</>
 					)}
 				</div>
 			)}

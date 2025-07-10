@@ -20,6 +20,7 @@ export interface IDocument {
 	folder: string | null
 	text: string
 	flashCard: IFlashCard[]
+	highlight: [number, number][]
 }
 
 export default function Sidebar() {
@@ -30,7 +31,7 @@ export default function Sidebar() {
 	const [newType, setNewType] = useState<'folder' | 'document'>('document')
 	const [deletePath, setDeletePath] = useState<string[]>([])
 	const [isScrolled, setIsScrolled] = useState(false)
-	
+
 	const scrollRef = useRef<HTMLDivElement>(null)
 
 	const router = useRouter()
@@ -50,22 +51,22 @@ export default function Sidebar() {
 	useEffect(() => {
 		const handleScroll = () => {
 			if (scrollRef.current) {
-				setIsScrolled(scrollRef.current.scrollTop > 0);
+				setIsScrolled(scrollRef.current.scrollTop > 0)
 			}
-		};
-	
-		const current = scrollRef.current;
-		if (current) {
-			current.addEventListener('scroll', handleScroll);
 		}
-	
+
+		const current = scrollRef.current
+		if (current) {
+			current.addEventListener('scroll', handleScroll)
+		}
+
 		return () => {
 			if (current) {
-				current.removeEventListener('scroll', handleScroll);
+				current.removeEventListener('scroll', handleScroll)
 			}
-		};
-	}, []);
-	
+		}
+	}, [])
+
 	useEffect(() => {
 		localStorage.setItem(
 			process.env.NEXT_PUBLIC_LOCAL_STORAGE_DOCUMENTS || 'my_documents',
@@ -78,8 +79,6 @@ export default function Sidebar() {
 			JSON.stringify(folders)
 		)
 	}, [folders])
-
-	
 
 	useEffect(() => {
 		if (deletePath.length === 0) return
@@ -159,7 +158,13 @@ export default function Sidebar() {
 	return (
 		<>
 			<div className='flex flex-col min-w-60 text-black h-screen p-2 overflow-hidden space-y-1 border-r border-r-1 border-r-gray-200'>
-				<h2 className={`px-2 py-2 flex justify-between items-center mb-2 ${isScrolled ? 'shadow-[0_4px_4px_-2px_rgba(0,0,0,0.1)]' : ''}`}>
+				<h2
+					className={`px-2 py-2 flex justify-between items-center mb-2 ${
+						isScrolled
+							? 'shadow-[0_4px_4px_-2px_rgba(0,0,0,0.1)]'
+							: ''
+					}`}
+				>
 					<div className='flex flex-row items-center gap-2'>
 						<Pyramid />
 						<span className='text-xl font-bold mb-1'>Aether</span>
@@ -187,7 +192,10 @@ export default function Sidebar() {
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</h2>
-				<div className='overflow-auto h-full' ref={scrollRef}>
+				<div
+					className='overflow-auto h-full'
+					ref={scrollRef}
+				>
 					{folders.map((folder: string) => {
 						return (
 							<Folder
@@ -200,8 +208,8 @@ export default function Sidebar() {
 								handleDelete={deleteFolder}
 								handleDeleteDocument={deleteDocument}
 								handleCreateDocument={openDocumentCreateModal}
-								setDocuments={setDocuments} 
-								setFolders={setFolders} 
+								setDocuments={setDocuments}
+								setFolders={setFolders}
 								getNewestDocumentData={getNewestDocumentData}
 								getNewestFolderData={getNewestFolderData}
 							/>
@@ -215,9 +223,11 @@ export default function Sidebar() {
 									key={'document-' + document.name}
 									name={document.name}
 									handleDelete={deleteDocument}
-									setDocuments={setDocuments} 
-									setFolders={setFolders} 
-									getNewestDocumentData={getNewestDocumentData}
+									setDocuments={setDocuments}
+									setFolders={setFolders}
+									getNewestDocumentData={
+										getNewestDocumentData
+									}
 									getNewestFolderData={getNewestFolderData}
 								/>
 							)
@@ -225,12 +235,12 @@ export default function Sidebar() {
 				</div>
 			</div>
 
-			<DocumentModal 
-				addModalOpen={addModalOpen} 
-				setAddModalOpen={setAddModalOpen} 
+			<DocumentModal
+				addModalOpen={addModalOpen}
+				setAddModalOpen={setAddModalOpen}
 				newType={newType}
-				setDocuments={setDocuments} 
-				setFolders={setFolders} 
+				setDocuments={setDocuments}
+				setFolders={setFolders}
 				parentFolder={parentFolder}
 				getNewestDocumentData={getNewestDocumentData}
 				getNewestFolderData={getNewestFolderData}

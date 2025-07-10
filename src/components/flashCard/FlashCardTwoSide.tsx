@@ -13,11 +13,11 @@ export default function FlashCardTwoSide({
 		<Card className='border-2 border-black'>
 			<CardContent onClick={() => setShowContent((pre) => !pre)}>
 				{!showContent ? (
-					<span className='h-100 flex justify-center items-center text-2xl font-bold pointer-event-none select-none'>
+					<span className='h-100 w-80 flex justify-center items-center text-2xl font-bold pointer-event-none select-none'>
 						{flashCard.label}
 					</span>
 				) : (
-					<div className='text-lg h-100 overflow-auto select-none'>
+					<div className='text-lg h-100 w-80 overflow-auto select-none'>
 						{flashCard.content}
 					</div>
 				)}
