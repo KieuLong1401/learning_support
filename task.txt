@@ -1,42 +1,8 @@
 theme
-hightlight cau sai
-
-Lumen
-→ Latin nghĩa là "ánh sáng" → biểu tượng cho "ánh sáng tri thức"
-→ 라틴어는 "빛"을 의미한다 → "지식의 빛"을 상징한다.
-
-Mnemo
-→ Rút gọn từ mnemonic – kỹ thuật ghi nhớ trong học tập
-→ 학습에 대한 기억 기술 - mnemonic에서 축약한다.
-
-Kairo (Kairos)
-→ Từ Hy Lạp: thời khắc "chín muồi", hoàn hảo để làm một điều gì đó → tượng trưng cho thời điểm học hiệu quả
-→ 그리스어: 무언가를 하기에 완벽한 "숙성"의 순간 → 효과적인 학습 시간을 상징한다.
+highlight cau sai
 
 Aether
-→ Truyền thuyết Hy Lạp: tầng cao nhất của bầu trời, tinh tú → tượng trưng cho tầm cao tri thức
 → 그리스 전설: 하늘의 최상층, 정수 → 지식의 높이를 상징한다.
 
-Noera
-→ Từ gốc Hy Lạp noēsis – hành động của tư duy, nhận thức
-→ 그리스 어원 noēsis - 사고와 인식의 행동
-
-Lucerna
-→ Latin: "cây đèn", hình ảnh của việc soi sáng kiến thức
-→ 라틴어: "등대", 지식을 밝히는 이미지.
-
-Soma
-→ Trong triết học: “thể xác” – đối lập với “tâm trí” (psyche), mang cảm giác về việc tích hợp trí óc và thân thể khi học
-→ 심신(心身, )은 마음(心身)과 반대되는 개념으로, 심신(心身)과 심신(心身)을 통합하는 것을 말한다.
-
-Arqive (Archive)
-→ Gợi cảm giác về nơi lưu trữ tri thức – nhưng viết cách điệu, dễ branding
-→ 지식 저장소에 대한 감각을 불러일으키지만 스타일리쉬하고 브랜딩하기 쉽다.
-
-Eleva
-→ Từ elevate: nâng tầm → tượng trưng cho việc nâng cao tri thức
-→ elevate 단어 : 향상 → 지식 향상을 상징한다.
-
-Sapien
-→ Từ Homo Sapiens – loài "có trí khôn" → gợi cảm giác trí tuệ, tiến hoá tri thức
-→ '지혜로운' 호모 사피엔스 → 지적 감각, 지식의 진화
+Logo
+→ 피라미드는 각 층이 확고한 지식은 지식의 정점에 도달하기 위한 발판인 지식 정복의 여정을 상징한다.

@@ -1,11 +1,6 @@
-import { use, useEffect, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { Button } from '../ui/button'
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from '../ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Skeleton } from '../ui/skeleton'
 import MCQQuiz from './MCQQuiz'
 import server from '../../lib/axios'
@@ -70,7 +65,7 @@ export default function QuizDialog({
 	}, [openResultPage])
 
 	const addCorectCount = () => {
-		setCorrectCount(pre => pre + 1)
+		setCorrectCount((pre) => pre + 1)
 	}
 	const makeOtherQuizzes = () => {
 		setOpenResultPage(false)
@@ -92,21 +87,25 @@ export default function QuizDialog({
 		})
 	}
 
-	const progress = (correctCount / mcqData.length * 100) | 0
-	var progressBarColor = 'bg-green-500'
+	const progress = ((correctCount / mcqData.length) * 100) | 0
+	let progressBarColor = 'bg-green-500'
 	if (progress < 80) {
 		progressBarColor = 'bg-yellow-300'
-	} 
+	}
 	if (progress < 50) {
 		progressBarColor = 'bg-orange-400'
-	} 
+	}
 	if (progress < 30) {
 		progressBarColor = 'bg-red-500'
 	}
 
 	const completedTime = startTime ? Date.now() - startTime : 0
-	const completedMinutes = String(Math.floor(completedTime / 1000 / 60)).padStart(2, '0');
-	const completedSeconds = String(Math.floor(completedTime / 1000 % 60)).padStart(2, '0');
+	const completedMinutes = String(
+		Math.floor(completedTime / 1000 / 60)
+	).padStart(2, '0')
+	const completedSeconds = String(
+		Math.floor((completedTime / 1000) % 60)
+	).padStart(2, '0')
 
 	return (
 		<Dialog
@@ -114,94 +113,86 @@ export default function QuizDialog({
 			onOpenChange={setIsOpen}
 		>
 			<DialogContent className='flex flex-col h-[95%]'>
-				{
-					openResultPage ?
-					(
-						<>
-							<DialogHeader>
-								<DialogTitle>Results</DialogTitle>
-							</DialogHeader>
-							<Card>
-								<CardHeader>
-									<CardTitle>
-										Completed Time
-									</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<span
-										className='text-[60px] font-bold'
-									>
-										{`${completedMinutes}:${completedSeconds}`}
+				{openResultPage ? (
+					<>
+						<DialogHeader>
+							<DialogTitle>Results</DialogTitle>
+						</DialogHeader>
+						<Card>
+							<CardHeader>
+								<CardTitle>Completed Time</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<span className='text-[60px] font-bold'>
+									{`${completedMinutes}:${completedSeconds}`}
+								</span>
+							</CardContent>
+						</Card>
+						<Card>
+							<CardHeader>
+								<CardTitle>Correct Answer</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<span className='text-[60px] font-bold'>
+									<span className='block mb-2 text-2xl, font-bold'>
+										{`${correctCount} / ${mcqData.length}`}
 									</span>
-								</CardContent>
-							</Card>
-							<Card>
-								<CardHeader>
-									<CardTitle>
-										Correct Answer
-									</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<span
-										className='text-[60px] font-bold'
+									<Progress
+										className='ProgressRoot w-[100%] h-6 rounded-full overflow-hidden bg-gray-200'
+										value={progress}
 									>
-										<span
-											className='block mb-2 text-2xl, font-bold'
-										>
-											{`${correctCount} / ${mcqData.length}`}
-										</span>
-										<Progress className="ProgressRoot w-[100%] h-6 rounded-full overflow-hidden bg-gray-200" value={progress}>
-											<ProgressIndicator
-												className={`ProgressIndicator w-full h-full ${progressBarColor}`}
-												style={{ transform: `translateX(-${100 - progress}%)` }}
-											/>
-										</Progress>
-									</span>
-								</CardContent>
-							</Card>
+										<ProgressIndicator
+											className={`ProgressIndicator w-full h-full ${progressBarColor}`}
+											style={{
+												transform: `translateX(-${
+													100 - progress
+												}%)`,
+											}}
+										/>
+									</Progress>
+								</span>
+							</CardContent>
+						</Card>
 
-							<div className='mt-auto flex flex-col gap-2'>
-								<Button onClick={makeOtherQuizzes}>
-									Other Quizzes
-								</Button>
-								<Button onClick={() => setOpenResultPage(false)}>
-									Do These Quizzes Again
-								</Button>
-							</div>
-
-						</>
-					):
-					(
-						<>
-							<DialogHeader>
-								<DialogTitle>Quizzes</DialogTitle>
-							</DialogHeader>
-							<div className='overflow-auto flex flex-col gap-y-4 flex-1'>
-								{isPending
-									? 
-									<Skeleton
-										className='flex-1 w-full rounded-md bg-gray-200'
-									/>
-									: error ? 
-										<span className='text-red-500'>{error}</span>
-									: 
-										mcqData.map((mcqQuiz, i) => {
-												return (
-													<MCQQuiz
-														quiz={mcqQuiz}
-														key={i}
-														addCorectCount={addCorectCount}
-													/>
-												)
-											})}
-							</div>
-							<Button onClick={() => setOpenResultPage(true)} disabled={isPending}>
-								Finish
+						<div className='mt-auto flex flex-col gap-2'>
+							<Button onClick={makeOtherQuizzes}>
+								Other Quizzes
 							</Button>
-						</>
-					)
-				}
-
+							<Button onClick={() => setOpenResultPage(false)}>
+								Do These Quizzes Again
+							</Button>
+						</div>
+					</>
+				) : (
+					<>
+						<DialogHeader>
+							<DialogTitle>Quizzes</DialogTitle>
+						</DialogHeader>
+						<div className='overflow-auto flex flex-col gap-y-4 flex-1'>
+							{isPending ? (
+								<Skeleton className='flex-1 w-full rounded-md bg-gray-200' />
+							) : error ? (
+								<span className='text-red-500'>{error}</span>
+							) : (
+								mcqData.map((mcqQuiz, i) => {
+									return (
+										<MCQQuiz
+											quiz={mcqQuiz}
+											key={i}
+											addCorectCount={addCorectCount}
+										/>
+									)
+								})
+							)}
+						</div>
+						<Button
+							onClick={() => setOpenResultPage(true)}
+							disabled={isPending}
+						>
+							Finish
+						</Button>
+					</>
+				)}
 			</DialogContent>
 		</Dialog>
 	)

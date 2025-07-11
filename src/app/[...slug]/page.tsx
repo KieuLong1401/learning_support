@@ -15,8 +15,8 @@ import FlashCardContainer from '@/components/flashCard/FlashCardContainer'
 import { IFlashCard } from '@/components/flashCard/FlashCard'
 import { toast } from 'sonner'
 
-import JSZip from 'jszip';
-import { parseStringPromise } from 'xml2js';
+import JSZip from 'jszip'
+import { parseStringPromise } from 'xml2js'
 
 export default function Document(props: {
 	params: Promise<{ slug: string[] }>
@@ -47,6 +47,7 @@ export default function Document(props: {
 		start: 0,
 		end: 0,
 	})
+	const textPreValueRef = useRef('')
 
 	// get slug
 	useEffect(() => {
@@ -65,14 +66,17 @@ export default function Document(props: {
 		const folderName = slug.length == 2 ? slug[0] : null
 		const documentName = slug.length == 2 ? slug[1] : slug[0]
 
-		const currentDocumentData = documents.find((document: IDocument) => {
-			const isSameName =
-				document.name.toLowerCase() == documentName.toLowerCase()
-			const isSameFolder = document.folder == folderName
+		const currentDocumentData: IDocument = documents.find(
+			(document: IDocument) => {
+				const isSameName =
+					document.name.toLowerCase() == documentName.toLowerCase()
+				const isSameFolder = document.folder == folderName
 
-			return isSameName && isSameFolder
-		})
+				return isSameName && isSameFolder
+			}
+		)
 		setDocumentData(currentDocumentData)
+		textPreValueRef.current = currentDocumentData.text
 	}, [slug])
 	// update data
 	useEffect(() => {
@@ -104,8 +108,51 @@ export default function Document(props: {
 
 	useEffect(() => {
 		syncScroll()
-		adjustHighlightParts()
-	}, [documentData?.text])
+		if (!documentData?.text || !documentData.highlight) return
+		if (documentData.text === textPreValueRef.current) return
+
+		const maxLen = documentData.text.length
+
+		let changeIndex = -1
+		while (
+			changeIndex < documentData.text.length &&
+			changeIndex < textPreValueRef.current.length &&
+			documentData.text[changeIndex] ===
+				textPreValueRef.current[changeIndex]
+		) {
+			changeIndex++
+		}
+		const addedLength =
+			documentData.text.length - textPreValueRef.current.length
+
+		const newHighlight: [number, number][] = documentData.highlight.map(
+			([start, end]) => {
+				const newEnd = Math.min(end, maxLen)
+				if (newEnd - start <= 0) return [0, 0]
+				if (changeIndex <= start) {
+					return [start + addedLength, newEnd + addedLength]
+				}
+				if (changeIndex > start && changeIndex < newEnd) {
+					return [start, newEnd + addedLength]
+				}
+
+				return [start, newEnd]
+			}
+		)
+
+		textPreValueRef.current = documentData.text
+		if (
+			JSON.stringify(newHighlight) ==
+			JSON.stringify(documentData.highlight)
+		) {
+			return
+		}
+
+		setDocumentData({
+			...documentData,
+			highlight: newHighlight,
+		})
+	}, [documentData])
 
 	// reset context menu state
 	useEffect(() => {
@@ -225,38 +272,40 @@ export default function Document(props: {
 		const result = await mammoth.extractRawText({ arrayBuffer })
 		return result.value
 	}
-	const extractTextFromHwpx = async (file: File): Promise<string | undefined> => {
+	const extractTextFromHwpx = async (
+		file: File
+	): Promise<string | undefined> => {
 		const arrayBuffer = await file.arrayBuffer()
-		const zip = await JSZip.loadAsync(arrayBuffer);
+		const zip = await JSZip.loadAsync(arrayBuffer)
 
-		const xmlFile = zip.file('Contents/section0.xml');
-      if (!xmlFile) {
-		return
-      }
+		const xmlFile = zip.file('Contents/section0.xml')
+		if (!xmlFile) {
+			return
+		}
 
-		const xmlContent = await xmlFile.async('text');
-		const json = await parseStringPromise(xmlContent);
+		const xmlContent = await xmlFile.async('text')
+		const json = await parseStringPromise(xmlContent)
 
-		const sectionKey = Object.keys(json).find((k) => k.endsWith('sec'));
-		const section = json[sectionKey || ''] || {};
+		const sectionKey = Object.keys(json).find((k) => k.endsWith('sec'))
+		const section = json[sectionKey || ''] || {}
 
-		const paragraphKey = Object.keys(section).find((k) => k.endsWith(':p'));
-		const paragraphs = section[paragraphKey || ''] || [];
+		const paragraphKey = Object.keys(section).find((k) => k.endsWith(':p'))
+		const paragraphs = section[paragraphKey || ''] || []
 
-		let fullText = '';
+		let fullText = ''
 		for (const para of paragraphs) {
-			const runKey = Object.keys(para).find((k) => k.endsWith(':run'));
-			const runs = para[runKey || ''] || [];
+			const runKey = Object.keys(para).find((k) => k.endsWith(':run'))
+			const runs = para[runKey || ''] || []
 
 			for (const r of runs) {
-				const textKey = Object.keys(r).find((k) => k.endsWith(':t'));
-				const textArray = r[textKey || ''];
+				const textKey = Object.keys(r).find((k) => k.endsWith(':t'))
+				const textArray = r[textKey || '']
 				if (Array.isArray(textArray)) {
-				fullText += textArray[0];
+					fullText += textArray[0]
 				}
 			}
 
-			fullText += '\n';
+			fullText += '\n'
 		}
 
 		return fullText
@@ -315,7 +364,7 @@ export default function Document(props: {
 			case 'application/haansofthwpx':
 				const extractedTextHwpx = await extractTextFromHwpx(file)
 
-				if(!extractedTextHwpx) return
+				if (!extractedTextHwpx) return
 
 				setDocumentData({
 					...(documentData as IDocument),
@@ -371,17 +420,14 @@ export default function Document(props: {
 	const getHighlightedText = (text: string, ranges: [number, number][]) => {
 		if (!ranges.length) return escapeHTML(text)
 
-		// Sort ranges để xử lý theo thứ tự và tránh overlap
 		ranges.sort((a, b) => a[0] - b[0])
 
 		let result = ''
 		let currentIndex = 0
 
 		for (const [start, end] of ranges) {
-			// Nếu range không hợp lệ, bỏ qua
 			if (start >= end || start < 0 || end > text.length) continue
 
-			// Thêm phần trước đoạn highlight
 			const before = escapeHTML(text.slice(currentIndex, start))
 			const highlighted = `<mark>${escapeHTML(
 				text.slice(start, end)
@@ -391,7 +437,6 @@ export default function Document(props: {
 			currentIndex = end
 		}
 
-		// Thêm phần còn lại sau đoạn cuối cùng
 		result += escapeHTML(text.slice(currentIndex))
 
 		return result
@@ -399,7 +444,6 @@ export default function Document(props: {
 	const mergeRanges = (ranges: [number, number][]): [number, number][] => {
 		if (!ranges.length) return []
 
-		// Sắp xếp theo start
 		ranges.sort((a, b) => a[0] - b[0])
 
 		const merged: [number, number][] = []
@@ -409,7 +453,6 @@ export default function Document(props: {
 			const [nextStart, nextEnd] = ranges[i]
 
 			if (nextStart <= end) {
-				// Gộp nếu chồng nhau
 				end = Math.max(end, nextEnd)
 			} else {
 				merged.push([start, end])
@@ -429,12 +472,9 @@ export default function Document(props: {
 		const result: [number, number][] = []
 
 		for (const [start, end] of highlights) {
-			// Không giao nhau
 			if (end <= removeStart || start >= removeEnd) {
 				result.push([start, end])
-			}
-			// Giao nhau một phần
-			else {
+			} else {
 				if (start < removeStart) {
 					result.push([start, Math.max(start, removeStart)])
 				}
@@ -466,24 +506,6 @@ export default function Document(props: {
 				...pre,
 				highlight: unhighlightParts(pre?.highlight, [start, end]),
 			}
-		})
-	}
-	const adjustHighlightParts = () => {
-		if(!documentData) return
-
-		const maxLen = documentData.text.length;
-
-		setDocumentData({
-			...documentData,
-			highlight: documentData.highlight.map(([start, end]) => {
-				const newEnd = Math.min(end, maxLen)
-
-				if (newEnd - start == 0) {
-					return [0, 0]
-				}
-
-				return [start, Math.min(end, maxLen)]
-			})
 		})
 	}
 
