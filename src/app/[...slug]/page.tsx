@@ -104,6 +104,7 @@ export default function Document(props: {
 
 	useEffect(() => {
 		syncScroll()
+		adjustHighlightParts()
 	}, [documentData?.text])
 
 	// reset context menu state
@@ -465,6 +466,24 @@ export default function Document(props: {
 				...pre,
 				highlight: unhighlightParts(pre?.highlight, [start, end]),
 			}
+		})
+	}
+	const adjustHighlightParts = () => {
+		if(!documentData) return
+
+		const maxLen = documentData.text.length;
+
+		setDocumentData({
+			...documentData,
+			highlight: documentData.highlight.map(([start, end]) => {
+				const newEnd = Math.min(end, maxLen)
+
+				if (newEnd - start == 0) {
+					return [0, 0]
+				}
+
+				return [start, Math.min(end, maxLen)]
+			})
 		})
 	}
 

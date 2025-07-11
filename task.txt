@@ -1,6 +1,5 @@
 theme
 hightlight cau sai
-cham diem sau khi hoan thanh quiz
 
 Lumen
 → Latin nghĩa là "ánh sáng" → biểu tượng cho "ánh sáng tri thức"
