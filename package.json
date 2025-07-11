@@ -25,6 +25,7 @@
     "clsx": "^2.1.1",
     "draft-js": "^0.11.7",
     "embla-carousel-react": "^8.6.0",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.522.0",
     "mammoth": "^1.9.1",
     "next": "15.3.4",
@@ -36,7 +37,8 @@
     "slugify": "^1.6.6",
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.1",
-    "vaul": "^1.1.2"
+    "vaul": "^1.1.2",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -44,6 +46,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/xml2js": "^0.4.14",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "tailwindcss": "^4",

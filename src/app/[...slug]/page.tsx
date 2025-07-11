@@ -15,6 +15,9 @@ import FlashCardContainer from '@/components/flashCard/FlashCardContainer'
 import { IFlashCard } from '@/components/flashCard/FlashCard'
 import { toast } from 'sonner'
 
+import JSZip from 'jszip';
+import { parseStringPromise } from 'xml2js';
+
 export default function Document(props: {
 	params: Promise<{ slug: string[] }>
 }) {
@@ -221,6 +224,42 @@ export default function Document(props: {
 		const result = await mammoth.extractRawText({ arrayBuffer })
 		return result.value
 	}
+	const extractTextFromHwpx = async (file: File): Promise<string | undefined> => {
+		const arrayBuffer = await file.arrayBuffer()
+		const zip = await JSZip.loadAsync(arrayBuffer);
+
+		const xmlFile = zip.file('Contents/section0.xml');
+      if (!xmlFile) {
+		return
+      }
+
+		const xmlContent = await xmlFile.async('text');
+		const json = await parseStringPromise(xmlContent);
+
+		const sectionKey = Object.keys(json).find((k) => k.endsWith('sec'));
+		const section = json[sectionKey || ''] || {};
+
+		const paragraphKey = Object.keys(section).find((k) => k.endsWith(':p'));
+		const paragraphs = section[paragraphKey || ''] || [];
+
+		let fullText = '';
+		for (const para of paragraphs) {
+			const runKey = Object.keys(para).find((k) => k.endsWith(':run'));
+			const runs = para[runKey || ''] || [];
+
+			for (const r of runs) {
+				const textKey = Object.keys(r).find((k) => k.endsWith(':t'));
+				const textArray = r[textKey || ''];
+				if (Array.isArray(textArray)) {
+				fullText += textArray[0];
+				}
+			}
+
+			fullText += '\n';
+		}
+
+		return fullText
+	}
 
 	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
@@ -242,6 +281,8 @@ export default function Document(props: {
 		const file = e.dataTransfer.files?.[0]
 		if (!file) return
 
+		console.log(file.type)
+
 		switch (file.type) {
 			case 'text/plain':
 				const reader = new FileReader()
@@ -260,14 +301,30 @@ export default function Document(props: {
 				reader.readAsText(file)
 				break
 			case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-				const extractedText = await extractTextFromDocx(file)
+				const extractedTextDocx = await extractTextFromDocx(file)
 				setDocumentData({
 					...(documentData as IDocument),
-					text: extractedText,
+					text: extractedTextDocx,
 				})
-				if (extractedText.trim() != '') {
+				if (extractedTextDocx.trim() != '') {
 					setTextareaErr(null)
 				}
+
+				break
+			case 'application/haansofthwpx':
+				const extractedTextHwpx = await extractTextFromHwpx(file)
+
+				if(!extractedTextHwpx) return
+
+				setDocumentData({
+					...(documentData as IDocument),
+					text: extractedTextHwpx,
+				})
+				if (extractedTextHwpx.trim() != '') {
+					setTextareaErr(null)
+				}
+
+				break
 		}
 	}
 
