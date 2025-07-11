@@ -10,7 +10,11 @@ interface MCQQuizProps {
 	options: string[]
 }
 
-export default function MCQQuiz({ quiz }: { quiz: MCQQuizProps }) {
+export default function MCQQuiz({ 
+	quiz, addCorectCount 
+}: { 
+	quiz: MCQQuizProps, addCorectCount: () => void
+}) {
 	const [options, setOptions] = useState<
 		{ text: string; isCorrect: boolean }[]
 	>([])
@@ -33,6 +37,10 @@ export default function MCQQuiz({ quiz }: { quiz: MCQQuizProps }) {
 
 	function handleClick(option: { text: string; isCorrect: boolean }) {
 		if (selected !== null) return
+
+		if(option.isCorrect) {
+			addCorectCount()
+		}
 
 		setSelected(option.text)
 		setIsCorrect(option.isCorrect)
