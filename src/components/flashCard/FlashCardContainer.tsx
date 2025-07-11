@@ -4,6 +4,7 @@ import FlashCardModal from './FlashCardModal'
 import FlashCard, { IFlashCard } from './FlashCard'
 import { IDocument } from '../layout/Sidebar'
 import FlashCardViewer from './FlashCardViewer'
+import { toast } from 'sonner'
 
 export default function FlashCardContainer({
 	flashCardData,
@@ -21,7 +22,13 @@ export default function FlashCardContainer({
 		<div className='flex flex-col flex-1 overflow-hidden'>
 			<Button
 				variant={'outline'}
-				onClick={() => setOpenShow(true)}
+				onClick={() => {
+					if (flashCardData.length < 1) {
+						toast('There is no Flashcard to show')
+						return
+					}
+					setOpenShow(true)
+				}}
 				className='mb-2'
 			>
 				Flashcards Viewer

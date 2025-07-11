@@ -496,6 +496,8 @@ export default function Document(props: {
 				highlight: mergeRanges([...pre?.highlight, [start, end]]),
 			}
 		})
+
+		setShowContextMenu(false)
 	}
 	const clearHighlight = () => {
 		const start = selectedTextAreaRef.current.start
@@ -507,6 +509,8 @@ export default function Document(props: {
 				highlight: unhighlightParts(pre?.highlight, [start, end]),
 			}
 		})
+
+		setShowContextMenu(false)
 	}
 
 	return (
@@ -544,7 +548,7 @@ export default function Document(props: {
 							<div className='px-1 relative'>
 								<div
 									ref={highlightRef}
-									className={`leading-relaxed tracking-wide absolute rounded-md border px-3 py-2 pr-5 outline-none md:text-sm min-h-[30vh] h-full w-full overflow-y-scroll overflow-x-hidden hide-scrollbar z-2 whitespace-pre-wrap break-words`}
+									className={`text-lg sm:text-lg md:text-sm text-transparent leading-relaxed tracking-wide absolute rounded-md border px-3 py-2 pr-5 outline-none min-h-[30vh] max-h-[70vh] h-full w-full overflow-y-scroll overflow-x-hidden hide-scrollbar z-2 whitespace-pre-wrap break-words`}
 									dangerouslySetInnerHTML={{
 										__html: getHighlightedText(
 											documentData?.text
