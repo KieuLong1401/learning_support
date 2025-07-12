@@ -1,12 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Button } from '../ui/button'
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '../ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { IDocument } from '../layout/Sidebar'
@@ -119,10 +113,11 @@ export default function FlashCardModal({
 		>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{isModify ? 'Modify the Flashcard' : 'Create new Flashcard'}</DialogTitle>
-					<DialogDescription>
-						{isModify ? 'Modify your Flashcard' : 'Create your new Flashcard'}
-					</DialogDescription>
+					<DialogTitle>
+						{isModify
+							? 'Modify The Flashcard'
+							: 'Create New Flashcard'}
+					</DialogTitle>
 				</DialogHeader>
 				<div className='flex flex-col gap-2 max-w-fulls overflow-hidden p-1'>
 					{titleError && (

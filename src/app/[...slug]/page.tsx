@@ -525,13 +525,11 @@ export default function Document(props: {
 					className='flex-1 flex flex-col overflow-hidden'
 				>
 					<TabsList>
-						<TabsTrigger value='quizzes'>Quizzes</TabsTrigger>
-						<TabsTrigger value='flash_cards'>
-							Flash Cards
-						</TabsTrigger>
+						<TabsTrigger value='document'>Document</TabsTrigger>
+						<TabsTrigger value='flashcards'>Flashcards</TabsTrigger>
 					</TabsList>
 					<TabsContent
-						value='quizzes'
+						value='document'
 						className='flex-1'
 					>
 						<div
@@ -565,7 +563,7 @@ export default function Document(props: {
 									placeholder={
 										draggingFile
 											? ''
-											: 'Type or drop file here'
+											: 'Type or drop a file here'
 									}
 									value={documentData?.text || ''}
 									onChange={(e) => {
@@ -582,8 +580,8 @@ export default function Document(props: {
 									spellCheck={false}
 								/>
 								{draggingFile && (
-									<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-3 border-blue-300 border-dashed bg-blue-100 pointer-events-none'>
-										<span className='text-blue-500'>
+									<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-4 border-blue-400 border-dashed bg-blue-100 pointer-events-none'>
+										<span className='text-4xl font-bold text-blue-400'>
 											Drop Here
 										</span>
 									</div>
@@ -593,12 +591,12 @@ export default function Document(props: {
 								onClick={openModal}
 								className='w-40 ml-auto'
 							>
-								Generate Quiz
+								Generate Quizzes
 							</Button>
 						</div>
 					</TabsContent>
 					<TabsContent
-						value='flash_cards'
+						value='flashcards'
 						className='flex-1 flex flex-col overflow-hidden'
 					>
 						<FlashCardContainer

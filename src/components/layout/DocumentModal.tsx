@@ -1,12 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Button } from '../ui/button'
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '../ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { IDocument } from './Sidebar'
@@ -190,10 +184,9 @@ export default function DocumentModal({
 		>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>{`${
-						name == '' ? 'Create new' : 'Rename your'
+					<DialogTitle className='capitalize'>{`${
+						name == '' ? 'Create New' : 'Rename Your'
 					} ${newType}`}</DialogTitle>
-					<DialogDescription>description</DialogDescription>
 				</DialogHeader>
 				<div className='grid gap-2 py-4'>
 					<div className='flex flex-col space-y-1'>

@@ -37,7 +37,7 @@ export default function FlashCardContainer({
 				onClick={() => setOpenModal(true)}
 				className='mb-4'
 			>
-				Create new flash card
+				Create New Flashcard
 			</Button>
 			<div className='flex-1 overflow-auto'>
 				<div className='grid gap-4 grid-cols-[repeat(auto-fit,_minmax(250px,_1fr))]'>
