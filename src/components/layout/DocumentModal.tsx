@@ -136,8 +136,6 @@ export default function DocumentModal({
 			return 'error'
 		}
 
-		// alter change path when rename the current path
-
 		setFolders(
 			newestFolderData.map((folder: string) => {
 				if (folder == name) {
@@ -150,6 +148,10 @@ export default function DocumentModal({
 		setDocuments(
 			newestDocumentData.map((document: IDocument) => {
 				if (document.folder == name) {
+					if(`/${document.folder ? document.folder + '/' : ''}${document.name}` == decodeURIComponent(pathName)) {
+						router.push(`/${newName}/${document.name}`)
+					}
+
 					return {
 						...document,
 						folder: newName,
