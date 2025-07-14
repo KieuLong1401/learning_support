@@ -66,12 +66,12 @@ export default function Document(props: {
 		const folderName = slug.length == 2 ? slug[0] : null
 		const documentName = slug.length == 2 ? slug[1] : slug[0]
 
+		
 		const currentDocumentData: IDocument = documents.find(
 			(document: IDocument) => {
 				const isSameName =
-					document.name.toLowerCase() == documentName.toLowerCase()
-				const isSameFolder = document.folder == folderName
-
+					document.name.toLowerCase() == decodeURIComponent(documentName).toLowerCase()
+				const isSameFolder = document.folder == (folderName != null ? decodeURIComponent(folderName) : null)
 				return isSameName && isSameFolder
 			}
 		)
@@ -91,8 +91,8 @@ export default function Document(props: {
 
 		const updatedData = oldData.map((document: IDocument) => {
 			const isSameName =
-				document.name.toLowerCase() == documentName.toLowerCase()
-			const isSameFolder = document.folder == folderName
+				document.name.toLowerCase() == decodeURIComponent(documentName).toLowerCase()
+			const isSameFolder = document.folder == (folderName != null ? decodeURIComponent(folderName) : null)
 
 			if (isSameName && isSameFolder) {
 				return documentData
@@ -331,8 +331,6 @@ export default function Document(props: {
 		const file = e.dataTransfer.files?.[0]
 		if (!file) return
 
-		console.log(file.type)
-
 		switch (file.type) {
 			case 'text/plain':
 				const reader = new FileReader()
@@ -521,7 +519,7 @@ export default function Document(props: {
 				</h1>
 
 				<Tabs
-					defaultValue='quizzes'
+					defaultValue='document'
 					className='flex-1 flex flex-col overflow-hidden'
 				>
 					<TabsList>

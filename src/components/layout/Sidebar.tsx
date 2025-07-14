@@ -83,7 +83,7 @@ export default function Sidebar() {
 	useEffect(() => {
 		if (deletePath.length === 0) return
 
-		if (deletePath.some((deleted) => deleted === pathName)) {
+		if (deletePath.some((deleted) => deleted === decodeURIComponent(pathName))) {
 			router.push('/')
 		}
 		setDeletePath([])

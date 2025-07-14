@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { IDocument } from './Sidebar'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function DocumentModal({
 	addModalOpen,
@@ -28,6 +29,9 @@ export default function DocumentModal({
 }) {
 	const [newName, setNewName] = useState(name)
 	const [nameInputErr, setNameInputErr] = useState<string | null>(null)
+
+	const router = useRouter()
+	const pathName = usePathname()
 
 	useEffect(() => {
 		setNewName(name)
@@ -93,6 +97,10 @@ export default function DocumentModal({
 			return isSameName && isSameFolder
 		})
 
+		if(`/${parentFolder ? parentFolder + '/' : ''}${name}` == decodeURIComponent(pathName)) {
+			router.push(`/${parentFolder ? parentFolder + '/' : ''}${newName}`)
+		}
+
 		if (isDuplicated) {
 			setNameInputErr(`This document is already exist`)
 			return 'error'
@@ -127,6 +135,8 @@ export default function DocumentModal({
 			setNameInputErr(`This folder is already exist`)
 			return 'error'
 		}
+
+		// alter change path when rename the current path
 
 		setFolders(
 			newestFolderData.map((folder: string) => {

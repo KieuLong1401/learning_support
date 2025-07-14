@@ -27,7 +27,7 @@ export default function Document({
 
 	const pathname = usePathname()
 	const path = '/' + (folder ? `${folder}/${name}` : name)
-	const isActive = pathname === path
+	const isActive = decodeURIComponent(pathname) === path
 
 	const handleRename = () => {
 		setAddModalOpen(true)

@@ -11,7 +11,7 @@ export default function FlashCardTwoSide({
 
 	return (
 		<Card className='border-2 border-black'>
-			<CardContent onClick={() => setShowContent((pre) => !pre)}>
+			<CardContent onClick={() => setShowContent((pre) => !pre)} className='flex justify-center'>
 				{!showContent ? (
 					<span className='h-100 w-80 flex justify-center items-center text-2xl font-bold pointer-event-none select-none'>
 						{flashCard.label}
