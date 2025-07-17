@@ -29,7 +29,7 @@ export default function Folder({
 	handleDeleteDocument: (folder: string | null, name: string) => void
 	handleCreateDocument: (folder: string | null) => void
 	setDocuments: Dispatch<SetStateAction<IDocument[]>>
-    setFolders: Dispatch<SetStateAction<string[]>>
+	setFolders: Dispatch<SetStateAction<string[]>>
 	getNewestDocumentData: () => any
 	getNewestFolderData: () => any
 }) {
@@ -49,8 +49,8 @@ export default function Folder({
 					},
 					{
 						name: 'Rename',
-						callback: () => setAddModalOpen(true)
-					}
+						callback: () => setAddModalOpen(true),
+					},
 				]}
 			>
 				<Accordion
@@ -59,8 +59,8 @@ export default function Folder({
 					className='w-full'
 				>
 					<AccordionItem value={name}>
-						<AccordionTrigger className='flex justify-between items-center px-4 pb-3 pt-1 text-left w-full hover:bg-gray-100 rounded-md h-8'>
-							<span className='block w-full h-full overflow-hidden text-ellipsis whitespace-nowrap'>
+						<AccordionTrigger className='hover:no-underline flex justify-between items-center px-4 pb-3 pt-1 text-left w-full hover:bg-gray-100 rounded-md h-8'>
+							<span className='block w-full h-full text-ellipsis whitespace-nowrap'>
 								{name}
 							</span>
 						</AccordionTrigger>
@@ -71,9 +71,11 @@ export default function Folder({
 									name={document.name}
 									folder={name}
 									handleDelete={handleDeleteDocument}
-									setDocuments={setDocuments} 
-									setFolders={setFolders} 
-									getNewestDocumentData={getNewestDocumentData}
+									setDocuments={setDocuments}
+									setFolders={setFolders}
+									getNewestDocumentData={
+										getNewestDocumentData
+									}
 									getNewestFolderData={getNewestFolderData}
 								/>
 							))}
@@ -81,12 +83,12 @@ export default function Folder({
 					</AccordionItem>
 				</Accordion>
 			</Context>
-			<DocumentModal 
-				addModalOpen={addModalOpen} 
-				setAddModalOpen={setAddModalOpen} 
+			<DocumentModal
+				addModalOpen={addModalOpen}
+				setAddModalOpen={setAddModalOpen}
 				newType={'folder'}
-				setDocuments={setDocuments} 
-				setFolders={setFolders} 
+				setDocuments={setDocuments}
+				setFolders={setFolders}
 				parentFolder={null}
 				getNewestDocumentData={getNewestDocumentData}
 				getNewestFolderData={getNewestFolderData}
