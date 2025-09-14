@@ -14,6 +14,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { IFlashCard } from '../flashCard/FlashCard'
 import { Ellipsis, File, Folders, Pyramid } from 'lucide-react'
 import DocumentModal from './DocumentModal'
+import Link from 'next/link'
 
 export interface IDocument {
 	name: string
@@ -83,7 +84,11 @@ export default function Sidebar() {
 	useEffect(() => {
 		if (deletePath.length === 0) return
 
-		if (deletePath.some((deleted) => deleted === decodeURIComponent(pathName))) {
+		if (
+			deletePath.some(
+				(deleted) => deleted === decodeURIComponent(pathName)
+			)
+		) {
 			router.push('/')
 		}
 		setDeletePath([])
@@ -165,10 +170,13 @@ export default function Sidebar() {
 							: ''
 					}`}
 				>
-					<div className='flex flex-row items-center gap-2'>
+					<Link
+						href={'/'}
+						className='flex flex-row items-center gap-2'
+					>
 						<Pyramid />
 						<span className='text-xl font-bold mb-1'>Aether</span>
-					</div>
+					</Link>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
