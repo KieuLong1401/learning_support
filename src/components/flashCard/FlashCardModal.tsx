@@ -35,7 +35,7 @@ export default function FlashCardModal({
 		setContentError(null)
 	}, [open, title, content])
 
-	const handleCreate = () => {
+	function handleCreate() {
 		if (titleInput == '' || contentInput == '') {
 			if (titleInput == '') setTitleError('Title can not be empty')
 			if (contentInput == '') setContentError('Content can not be empty')
@@ -66,7 +66,7 @@ export default function FlashCardModal({
 
 		onOpenChange(false)
 	}
-	const handleModify = () => {
+	function handleModify() {
 		if (titleInput == '' || contentInput == '') {
 			if (titleInput == '') setTitleError('Title can not be empty')
 			if (contentInput == '') setContentError('Content can not be empty')

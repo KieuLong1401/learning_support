@@ -9,14 +9,15 @@ import QuizDialog from '@/components/quiz/QuizDialog'
 
 import { IDocument } from '@/components/layout/Sidebar'
 
-import mammoth from 'mammoth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FlashCardContainer from '@/components/flashCard/FlashCardContainer'
 import { IFlashCard } from '@/components/flashCard/FlashCard'
 import { toast } from 'sonner'
-
-import JSZip from 'jszip'
-import { parseStringPromise } from 'xml2js'
+import {
+	escapeHTML,
+	extractTextFromDocx,
+	extractTextFromHwpx,
+} from '@/lib/utils'
 
 export default function Document(props: {
 	params: Promise<{ slug: string[] }>
@@ -264,7 +265,7 @@ export default function Document(props: {
 		})
 	}, [showConcept])
 
-	const openModal = () => {
+	function openModal() {
 		if ((documentData?.text || '').trim() == '') {
 			setTextareaErr('cannot generate quiz from an empty text')
 			return
@@ -272,51 +273,7 @@ export default function Document(props: {
 		setModalOpen(true)
 	}
 
-	const extractTextFromDocx = async (file: File): Promise<string> => {
-		const arrayBuffer = await file.arrayBuffer()
-		const result = await mammoth.extractRawText({ arrayBuffer })
-		return result.value
-	}
-	const extractTextFromHwpx = async (
-		file: File
-	): Promise<string | undefined> => {
-		const arrayBuffer = await file.arrayBuffer()
-		const zip = await JSZip.loadAsync(arrayBuffer)
-
-		const xmlFile = zip.file('Contents/section0.xml')
-		if (!xmlFile) {
-			return
-		}
-
-		const xmlContent = await xmlFile.async('text')
-		const json = await parseStringPromise(xmlContent)
-
-		const sectionKey = Object.keys(json).find((k) => k.endsWith('sec'))
-		const section = json[sectionKey || ''] || {}
-
-		const paragraphKey = Object.keys(section).find((k) => k.endsWith(':p'))
-		const paragraphs = section[paragraphKey || ''] || []
-
-		let fullText = ''
-		for (const para of paragraphs) {
-			const runKey = Object.keys(para).find((k) => k.endsWith(':run'))
-			const runs = para[runKey || ''] || []
-
-			for (const r of runs) {
-				const textKey = Object.keys(r).find((k) => k.endsWith(':t'))
-				const textArray = r[textKey || '']
-				if (Array.isArray(textArray)) {
-					fullText += textArray[0]
-				}
-			}
-
-			fullText += '\n'
-		}
-
-		return fullText
-	}
-
-	const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+	function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
 		e.preventDefault()
 
 		const hasFiles = Array.from(e.dataTransfer.items).some(
@@ -325,11 +282,11 @@ export default function Document(props: {
 
 		if (!draggingFile && hasFiles) setDraggingFile(true)
 	}
-	const handleDragExit = (e: React.DragEvent<HTMLDivElement>) => {
+	function handleDragExit(e: React.DragEvent<HTMLDivElement>) {
 		e.preventDefault()
 		if (draggingFile) setDraggingFile(false)
 	}
-	const handleDropFile = async (e: React.DragEvent<HTMLDivElement>) => {
+	async function handleDropFile(e: React.DragEvent<HTMLDivElement>) {
 		e.preventDefault()
 		if (draggingFile) setDraggingFile(false)
 
@@ -383,7 +340,7 @@ export default function Document(props: {
 		}
 	}
 
-	const handleCreateFlashCard = () => {
+	function handleCreateFlashCard() {
 		const flashCardData = documentData?.flashCard
 
 		const isDuplicated = flashCardData?.some((flashCard: IFlashCard) => {
@@ -408,21 +365,13 @@ export default function Document(props: {
 		setShowContextMenu(false)
 	}
 
-	const syncScroll = () => {
+	function syncScroll() {
 		if (!textareaRef.current || !highlightRef.current) return
 
 		highlightRef.current.scrollTop = textareaRef.current.scrollTop
 		highlightRef.current.scrollLeft = textareaRef.current.scrollLeft
 	}
-	const escapeHTML = (str: string) => {
-		return str
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;')
-			.replace(/"/g, '&quot;')
-			.replace(/'/g, '&#039;')
-	}
-	const getHighlightedText = (text: string, ranges: [number, number][]) => {
+	function getHighlightedText(text: string, ranges: [number, number][]) {
 		if (!ranges.length) return escapeHTML(text)
 
 		ranges.sort((a, b) => a[0] - b[0])
@@ -446,7 +395,7 @@ export default function Document(props: {
 
 		return result
 	}
-	const mergeRanges = (ranges: [number, number][]): [number, number][] => {
+	function mergeRanges(ranges: [number, number][]): [number, number][] {
 		if (!ranges.length) return []
 
 		ranges.sort((a, b) => a[0] - b[0])
@@ -491,7 +440,7 @@ export default function Document(props: {
 
 		return result
 	}
-	const highlight = () => {
+	function highlight() {
 		const start = selectedTextAreaRef.current.start
 		const end = selectedTextAreaRef.current.end
 		setDocumentData((pre) => {
@@ -504,7 +453,7 @@ export default function Document(props: {
 
 		setShowContextMenu(false)
 	}
-	const clearHighlight = () => {
+	function clearHighlight() {
 		const start = selectedTextAreaRef.current.start
 		const end = selectedTextAreaRef.current.end
 		setDocumentData((pre) => {

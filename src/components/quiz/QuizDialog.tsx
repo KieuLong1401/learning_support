@@ -64,10 +64,10 @@ export default function QuizDialog({
 		setCorrectCount(0)
 	}, [openResultPage])
 
-	const addCorectCount = () => {
+	function addCorectCount() {
 		setCorrectCount((pre) => pre + 1)
 	}
-	const makeOtherQuizzes = () => {
+	function makeOtherQuizzes() {
 		setOpenResultPage(false)
 		startTransition(async () => {
 			try {

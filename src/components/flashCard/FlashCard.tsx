@@ -27,7 +27,7 @@ export default function FlashCard({
 }) {
 	const [openModal, setOpenModal] = useState(false)
 
-	const handleDelete = () => {
+	function handleDelete() {
 		setDocumentData({
 			...(documentData as IDocument),
 			flashCard:

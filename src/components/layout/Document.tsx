@@ -11,7 +11,7 @@ export default function Document({
 	folder = null,
 	handleDelete,
 	setDocuments,
-    setFolders,
+	setFolders,
 	getNewestDocumentData,
 	getNewestFolderData,
 }: {
@@ -19,7 +19,7 @@ export default function Document({
 	folder?: string | null
 	handleDelete: (folder: string | null, name: string) => void
 	setDocuments: Dispatch<SetStateAction<IDocument[]>>
-    setFolders: Dispatch<SetStateAction<string[]>>
+	setFolders: Dispatch<SetStateAction<string[]>>
 	getNewestDocumentData: () => any
 	getNewestFolderData: () => any
 }) {
@@ -29,7 +29,7 @@ export default function Document({
 	const path = '/' + (folder ? `${folder}/${name}` : name)
 	const isActive = decodeURIComponent(pathname) === path
 
-	const handleRename = () => {
+	function handleRename() {
 		setAddModalOpen(true)
 	}
 
@@ -43,28 +43,28 @@ export default function Document({
 					},
 					{
 						name: 'Rename',
-						callback: () => handleRename()
-					}
+						callback: () => handleRename(),
+					},
 				]}
-				>
+			>
 				<Link
 					href={path}
 					className='w-full'
-					>
+				>
 					<Button
 						variant={isActive ? 'outline' : 'ghost'}
 						className='block w-full justify-start px-4 pb-3 pt-1 h-8 overflow-hidden text-ellipsis whitespace-nowrap text-left'
-						>
+					>
 						{name}
 					</Button>
 				</Link>
 			</Context>
 			<DocumentModal
-				addModalOpen={addModalOpen} 
-				setAddModalOpen={setAddModalOpen} 
+				addModalOpen={addModalOpen}
+				setAddModalOpen={setAddModalOpen}
 				newType={'document'}
-				setDocuments={setDocuments} 
-				setFolders={setFolders} 
+				setDocuments={setDocuments}
+				setFolders={setFolders}
 				parentFolder={folder}
 				getNewestDocumentData={getNewestDocumentData}
 				getNewestFolderData={getNewestFolderData}
