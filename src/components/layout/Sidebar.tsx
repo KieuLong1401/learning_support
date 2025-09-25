@@ -190,12 +190,12 @@ export default function Sidebar() {
 							<DropdownMenuItem
 								onClick={() => openDocumentCreateModal(null)}
 							>
-								<File /> New Document
+								<File /> 문서 생성
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								onClick={() => openFolderCreateModal()}
 							>
-								<Folders /> New Folder
+								<Folders /> 폴더 생성
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>

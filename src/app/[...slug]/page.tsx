@@ -267,7 +267,7 @@ export default function Document(props: {
 
 	function openModal() {
 		if ((documentData?.text || '').trim() == '') {
-			setTextareaErr('cannot generate quiz from an empty text')
+			setTextareaErr('빈 텍스트에서 퀴즈를 생성할 수 없습니다')
 			return
 		}
 		setModalOpen(true)
@@ -348,7 +348,7 @@ export default function Document(props: {
 		})
 
 		if (isDuplicated) {
-			toast('Duplicated')
+			toast('중복됨')
 		} else {
 			setDocumentData({
 				...(documentData as IDocument),
@@ -479,8 +479,10 @@ export default function Document(props: {
 					className='flex-1 flex flex-col overflow-hidden'
 				>
 					<TabsList>
-						<TabsTrigger value='document'>Document</TabsTrigger>
-						<TabsTrigger value='flashcards'>Flashcards</TabsTrigger>
+						<TabsTrigger value='document'>문서</TabsTrigger>
+						<TabsTrigger value='flashcards'>
+							플래시 카드
+						</TabsTrigger>
 					</TabsList>
 					<TabsContent
 						value='document'
@@ -517,7 +519,7 @@ export default function Document(props: {
 									placeholder={
 										draggingFile
 											? ''
-											: 'Type or drop a file here'
+											: '텍스트를 입력하거나 파일을 여기에 드래그하세요'
 									}
 									value={documentData?.text || ''}
 									onChange={(e) => {
@@ -536,7 +538,7 @@ export default function Document(props: {
 								{draggingFile && (
 									<div className='absolute top-0 left-0 w-full h-full flex items-center justify-center border-4 border-blue-400 border-dashed bg-blue-100 pointer-events-none'>
 										<span className='text-4xl font-bold text-blue-400'>
-											Drop Here
+											여기에 드래그하세요
 										</span>
 									</div>
 								)}
@@ -545,7 +547,7 @@ export default function Document(props: {
 								onClick={openModal}
 								className='w-40 ml-auto'
 							>
-								Generate Quizzes
+								퀴즈 생성
 							</Button>
 						</div>
 					</TabsContent>
@@ -618,21 +620,21 @@ export default function Document(props: {
 								variant={'ghost'}
 								className='w-52 h-8 text-left justify-start rounded-sm'
 							>
-								Get Concept
+								개념 설명 보기
 							</Button>
 							<Button
 								onClick={highlight}
 								variant={'ghost'}
 								className='w-52 h-8 text-left justify-start rounded-sm'
 							>
-								Highlight
+								하이라이트 추가
 							</Button>
 							<Button
 								onClick={clearHighlight}
 								variant={'ghost'}
 								className='w-52 h-8 text-left justify-start rounded-sm'
 							>
-								Clear Highlight
+								하이라이트 지우기
 							</Button>
 						</>
 					)}

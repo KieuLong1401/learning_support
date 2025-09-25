@@ -49,7 +49,7 @@ export default function DocumentModal({
 			return isSameName && isSameFolder
 		})
 		if (isDuplicated) {
-			setNameInputErr(`This document is already exist`)
+			setNameInputErr(`이 문서는 이미 존재합니다`)
 			return 'error'
 		}
 
@@ -74,7 +74,7 @@ export default function DocumentModal({
 			return isSameName
 		})
 		if (isDuplicated) {
-			setNameInputErr(`This folder is already exist`)
+			setNameInputErr(`이 폴더는 이미 존재합니다`)
 			return 'error'
 		}
 
@@ -97,12 +97,15 @@ export default function DocumentModal({
 			return isSameName && isSameFolder
 		})
 
-		if(`/${parentFolder ? parentFolder + '/' : ''}${name}` == decodeURIComponent(pathName)) {
+		if (
+			`/${parentFolder ? parentFolder + '/' : ''}${name}` ==
+			decodeURIComponent(pathName)
+		) {
 			router.push(`/${parentFolder ? parentFolder + '/' : ''}${newName}`)
 		}
 
 		if (isDuplicated) {
-			setNameInputErr(`This document is already exist`)
+			setNameInputErr(`이 문서는 이미 존재합니다`)
 			return 'error'
 		}
 
@@ -132,7 +135,7 @@ export default function DocumentModal({
 		)
 
 		if (isDuplicated) {
-			setNameInputErr(`This folder is already exist`)
+			setNameInputErr(`이 폴더는 이미 존재합니다`)
 			return 'error'
 		}
 
@@ -148,7 +151,11 @@ export default function DocumentModal({
 		setDocuments(
 			newestDocumentData.map((document: IDocument) => {
 				if (document.folder == name) {
-					if(`/${document.folder ? document.folder + '/' : ''}${document.name}` == decodeURIComponent(pathName)) {
+					if (
+						`/${document.folder ? document.folder + '/' : ''}${
+							document.name
+						}` == decodeURIComponent(pathName)
+					) {
 						router.push(`/${newName}/${document.name}`)
 					}
 
@@ -166,7 +173,7 @@ export default function DocumentModal({
 		const createName = newName.trim()
 
 		if (!createName) {
-			setNameInputErr('Please use a valid name')
+			setNameInputErr('유효한 이름을 사용해 주세요')
 			return
 		}
 		let error: string | undefined = undefined
@@ -197,12 +204,14 @@ export default function DocumentModal({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle className='capitalize'>{`${
-						name == '' ? 'Create New' : 'Rename Your'
-					} ${newType}`}</DialogTitle>
+						newType == 'document' ? '문서' : '폴더'
+					}${
+						name == '' ? '을 생성' : '의 이름을 바꾸기'
+					}`}</DialogTitle>
 				</DialogHeader>
 				<div className='grid gap-2 py-4'>
 					<div className='flex flex-col space-y-1'>
-						<Label htmlFor='document-name'>Name</Label>
+						<Label htmlFor='document-name'>이름</Label>
 						{nameInputErr && (
 							<p className='text-red-500'>{nameInputErr}</p>
 						)}
@@ -231,10 +240,10 @@ export default function DocumentModal({
 						variant='outline'
 						onClick={() => setAddModalOpen(false)}
 					>
-						Cancel
+						취소
 					</Button>
 					<Button onClick={handleAddSubmit}>
-						{name == '' ? 'Create' : 'Rename'}
+						{name == '' ? '생성' : '이름 바꾸기'}
 					</Button>
 				</div>
 			</DialogContent>
