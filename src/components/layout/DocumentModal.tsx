@@ -5,6 +5,7 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { IDocument } from './Sidebar'
 import { usePathname, useRouter } from 'next/navigation'
+import { File, Folders } from 'lucide-react'
 
 export default function DocumentModal({
 	addModalOpen,
@@ -203,11 +204,12 @@ export default function DocumentModal({
 		>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle className='capitalize'>{`${
-						newType == 'document' ? '문서' : '폴더'
-					}${
-						name == '' ? '을 생성' : '의 이름을 바꾸기'
-					}`}</DialogTitle>
+					<DialogTitle className='capitalize flex items-center gap-2'>
+						{newType == 'document' ? <File /> : <Folders />}
+						{`${newType == 'document' ? '문서' : '폴더'}${
+							name == '' ? '을 생성' : '의 이름을 바꾸기'
+						}`}
+					</DialogTitle>
 				</DialogHeader>
 				<div className='grid gap-2 py-4'>
 					<div className='flex flex-col space-y-1'>
