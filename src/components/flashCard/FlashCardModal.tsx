@@ -37,8 +37,9 @@ export default function FlashCardModal({
 
 	function handleCreate() {
 		if (titleInput == '' || contentInput == '') {
-			if (titleInput == '') setTitleError('Title can not be empty')
-			if (contentInput == '') setContentError('Content can not be empty')
+			if (titleInput == '') setTitleError('제목은 비워둘 수 없습니다')
+			if (contentInput == '')
+				setContentError('콘텐츠는 비워둘 수 없습니다')
 			return
 		}
 
@@ -49,7 +50,7 @@ export default function FlashCardModal({
 		})
 
 		if (isDuplicated) {
-			setTitleError('Duplicated title')
+			setTitleError('중복된 제목입니다')
 			return
 		}
 
@@ -68,8 +69,9 @@ export default function FlashCardModal({
 	}
 	function handleModify() {
 		if (titleInput == '' || contentInput == '') {
-			if (titleInput == '') setTitleError('Title can not be empty')
-			if (contentInput == '') setContentError('Content can not be empty')
+			if (titleInput == '') setTitleError('제목은 비워둘 수 없습니다')
+			if (contentInput == '')
+				setContentError('콘텐츠는 비워둘 수 없습니다')
 			return
 		}
 
@@ -84,7 +86,7 @@ export default function FlashCardModal({
 		})
 
 		if (isDuplicated) {
-			setTitleError('Duplicated title')
+			setTitleError('중복된 제목입니다')
 			return
 		}
 
@@ -114,9 +116,7 @@ export default function FlashCardModal({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>
-						{isModify
-							? 'Modify The Flashcard'
-							: 'Create New Flashcard'}
+						{isModify ? '플래시카드 수정' : '플래시카드 추가'}
 					</DialogTitle>
 				</DialogHeader>
 				<div className='flex flex-col gap-2 max-w-fulls overflow-hidden p-1'>
@@ -127,7 +127,7 @@ export default function FlashCardModal({
 					)}
 					<Input
 						id='document-name'
-						placeholder='Title'
+						placeholder='제목'
 						value={titleInput}
 						onChange={(e) => {
 							setTitleError(null)
@@ -141,7 +141,7 @@ export default function FlashCardModal({
 					)}
 					<Textarea
 						className='resize-none max-h-70 h-70 w-full overflow-auto break-words whitespace-pre-wrap'
-						placeholder='Content'
+						placeholder='콘텐츠'
 						value={contentInput}
 						onChange={(e) => {
 							setContentError(null)
@@ -154,7 +154,7 @@ export default function FlashCardModal({
 						variant='outline'
 						onClick={() => onOpenChange(false)}
 					>
-						Cancel
+						취소
 					</Button>
 					<Button
 						onClick={() => {
@@ -165,7 +165,7 @@ export default function FlashCardModal({
 							}
 						}}
 					>
-						{isModify ? 'Modify' : 'Create'}
+						{isModify ? '수정' : '추가'}
 					</Button>
 				</div>
 			</DialogContent>

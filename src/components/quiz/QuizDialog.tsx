@@ -116,11 +116,11 @@ export default function QuizDialog({
 				{openResultPage ? (
 					<>
 						<DialogHeader>
-							<DialogTitle>Results</DialogTitle>
+							<DialogTitle>결과</DialogTitle>
 						</DialogHeader>
 						<Card>
 							<CardHeader>
-								<CardTitle>Completed Time</CardTitle>
+								<CardTitle>완료 시간</CardTitle>
 							</CardHeader>
 							<CardContent>
 								<span className='text-[60px] font-bold'>
@@ -130,7 +130,7 @@ export default function QuizDialog({
 						</Card>
 						<Card>
 							<CardHeader>
-								<CardTitle>Correct Answer</CardTitle>
+								<CardTitle>정답</CardTitle>
 							</CardHeader>
 							<CardContent>
 								<span className='text-[60px] font-bold'>
@@ -156,21 +156,21 @@ export default function QuizDialog({
 
 						<div className='mt-auto flex flex-col gap-2'>
 							<Button onClick={makeOtherQuizzes}>
-								Other Quizzes
+								다른 퀴즈 만들기
 							</Button>
 							<Button onClick={() => setOpenResultPage(false)}>
-								Do These Quizzes Again
+								다시 풀기
 							</Button>
 						</div>
 					</>
 				) : (
 					<>
 						<DialogHeader>
-							<DialogTitle>Quizzes</DialogTitle>
+							<DialogTitle>퀴즈</DialogTitle>
 						</DialogHeader>
 						<div className='overflow-auto flex flex-col gap-y-4 flex-1'>
 							{isPending ? (
-								<Skeleton className='flex-1 w-full rounded-md bg-gray-200' />
+								<Skeleton className='flex-1 w-full rounded-md bg-[var(--border)]' />
 							) : error ? (
 								<span className='text-red-500'>{error}</span>
 							) : (
@@ -189,7 +189,7 @@ export default function QuizDialog({
 							onClick={() => setOpenResultPage(true)}
 							disabled={isPending}
 						>
-							Finish
+							결과 보기
 						</Button>
 					</>
 				)}

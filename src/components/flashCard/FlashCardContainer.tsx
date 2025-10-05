@@ -24,20 +24,20 @@ export default function FlashCardContainer({
 				variant={'outline'}
 				onClick={() => {
 					if (flashCardData.length < 1) {
-						toast('There is no Flashcard to show')
+						toast('표시할 플래시카드가 없습니다')
 						return
 					}
 					setOpenShow(true)
 				}}
 				className='mb-2'
 			>
-				Flashcards Viewer
+				플래시카드 보기
 			</Button>
 			<Button
 				onClick={() => setOpenModal(true)}
 				className='mb-4'
 			>
-				Create New Flashcard
+				플래시카드 추가
 			</Button>
 			<div className='flex-1 overflow-auto'>
 				<div className='grid gap-4 grid-cols-[repeat(auto-fit,_minmax(250px,_1fr))]'>

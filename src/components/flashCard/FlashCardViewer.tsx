@@ -26,7 +26,7 @@ export default function FlashCardViewer({
 		>
 			<DrawerContent>
 				<DrawerHeader>
-					<DrawerTitle>Flashcards</DrawerTitle>
+					<DrawerTitle>플래시카드</DrawerTitle>
 				</DrawerHeader>
 				<div className='px-30 pb-20 max-h-[80vh] h-[80vh] flex items-center justify-center'>
 					<Carousel className='max-w-100'>
