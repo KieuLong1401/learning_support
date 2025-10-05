@@ -15,6 +15,7 @@ import { IFlashCard } from '../flashCard/FlashCard'
 import { Ellipsis, File, Folders, Pyramid } from 'lucide-react'
 import DocumentModal from './DocumentModal'
 import Link from 'next/link'
+import { ModeToggle } from './ModeToggle'
 
 export interface IDocument {
 	name: string
@@ -162,7 +163,7 @@ export default function Sidebar() {
 
 	return (
 		<>
-			<div className='flex flex-col min-w-60 text-black h-screen p-2 overflow-hidden space-y-1 border-r border-r-2 border-r-gray-300'>
+			<div className='flex flex-col min-w-60 h-screen p-2 overflow-hidden space-y-1 border-r border-r-2 border-r-gray-300'>
 				<h2
 					className={`px-2 py-2 flex justify-between items-center mb-2 ${
 						isScrolled
@@ -241,6 +242,7 @@ export default function Sidebar() {
 							)
 						})}
 				</div>
+				<ModeToggle />
 			</div>
 
 			<DocumentModal

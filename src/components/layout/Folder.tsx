@@ -59,12 +59,12 @@ export default function Folder({
 					className='w-full'
 				>
 					<AccordionItem value={name}>
-						<AccordionTrigger className='hover:no-underline flex justify-between items-center px-4 pb-3 pt-1 text-left w-full hover:bg-gray-100 rounded-md h-8'>
+						<AccordionTrigger className='hover:no-underline flex justify-between items-center px-4 pb-3 pt-1 text-left w-full rounded-md h-8'>
 							<span className='block w-full h-full text-ellipsis whitespace-nowrap'>
 								{name}
 							</span>
 						</AccordionTrigger>
-						<AccordionContent className='ml-4 border-l border-black p-0'>
+						<AccordionContent className='ml-4 border-l border-[var(--foreground)] p-0'>
 							{folder_children.map((document) => (
 								<Document
 									key={name + document.name}

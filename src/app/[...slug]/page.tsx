@@ -383,9 +383,9 @@ export default function Document(props: {
 			if (start >= end || start < 0 || end > text.length) continue
 
 			const before = escapeHTML(text.slice(currentIndex, start))
-			const highlighted = `<mark>${escapeHTML(
-				text.slice(start, end)
-			)}</mark>`
+			const highlighted = `<span style="
+    background-color: gray;
+">${escapeHTML(text.slice(start, end))}</span>`
 
 			result += before + highlighted
 			currentIndex = end
@@ -567,7 +567,7 @@ export default function Document(props: {
 			{showContextMenu && (
 				<div
 					ref={contextMenuRef}
-					className='absolute flex flex-col z-50 max-w-100 p-1 bg-white shadow-md border rounded-md animate-in fade-in'
+					className='absolute flex flex-col z-50 max-w-100 p-1 bg-[var(--background)] shadow-md border rounded-md animate-in fade-in'
 					style={{
 						top: contextMenuPosition.y,
 						left: contextMenuPosition.x,
