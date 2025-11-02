@@ -4,6 +4,7 @@ import './globals.css'
 import Sidebar from '@/components/layout/Sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
+import Pomodoro from '@/components/layout/Pomodoro'
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -40,6 +41,7 @@ export default function RootLayout({
 				>
 					<Sidebar />
 					{children}
+					<Pomodoro />
 					<Toaster className='bg-red-500 text-white' />
 				</ThemeProvider>
 			</body>
