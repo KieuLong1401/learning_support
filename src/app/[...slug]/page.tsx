@@ -606,7 +606,7 @@ export default function Document(props: {
 								</div>
 							</div>
 							{concept == '' ? (
-								<Skeleton className='h-50 w-90 rounded-md bg-gray-200' />
+								<Skeleton className='h-50 w-90 rounded-md bg-[var(--border)]' />
 							) : (
 								<p className='break-words whitespace-normal'>
 									{concept}
